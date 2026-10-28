@@ -1,0 +1,17 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Kortere, penere adresser
+[[redirects]]
+  from = "/skjerm"
+  to = "/skjerm.html"
+  status = 200
+
+[[redirects]]
+  from = "/kontroll"
+  to = "/kontroll.html"
+  status = 200

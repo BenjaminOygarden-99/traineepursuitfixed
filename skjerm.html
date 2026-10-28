@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trainee Pursuit – storskjerm</title>
+<link rel="stylesheet" href="/shared.css">
+<style>
+  /* Fast 1920×1080-lerret som skaleres til projektoren */
+  html, body { height: 100%; overflow: hidden; }
+  body { background: #021c1b; }
+  #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; overflow: hidden; background: var(--deep); }
+  #scene { position: absolute; inset: 0; z-index: 6; }
+  .view { position: absolute; inset: 0; padding: 96px 210px 70px; }
+
+  /* ======================================================================
+     STUDIOET
+     ====================================================================== */
+  .studio, .studio > * { position: absolute; inset: 0; pointer-events: none; }
+  .st-wall {
+    background:
+      radial-gradient(circle, rgba(255, 241, 210, .34) 0 7px, rgba(255, 220, 160, .14) 10px, rgba(101, 191, 193, .10) 15px, transparent 22px) 0 0 / 66px 66px,
+      radial-gradient(ellipse 70% 60% at 50% 42%, #0e5d57 0%, var(--stage) 45%, var(--deep) 80%);
+    -webkit-mask-image: radial-gradient(ellipse 85% 80% at 50% 45%, #000 55%, rgba(0,0,0,.55) 100%);
+            mask-image: radial-gradient(ellipse 85% 80% at 50% 45%, #000 55%, rgba(0,0,0,.55) 100%);
+  }
+  .st-spots i {
+    position: absolute; top: -60px; width: 640px; height: 1200px;
+    background: linear-gradient(180deg, rgba(255, 233, 180, .30), rgba(255, 220, 150, .08) 60%, transparent 88%);
+    clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
+    filter: blur(18px); mix-blend-mode: screen; transform-origin: 50% 0;
+  }
+  .st-spots i:nth-child(1) { left: 230px; transform: rotate(-16deg); }
+  .st-spots i:nth-child(2) { left: 640px; transform: rotate(0deg); opacity: .9; }
+  .st-spots i:nth-child(3) { right: 230px; transform: rotate(16deg); }
+  .st-floor { top: auto; height: 300px; background: radial-gradient(ellipse 55% 90% at 50% 105%, rgba(244, 185, 66, .16), transparent 70%), linear-gradient(180deg, transparent, rgba(2, 28, 27, .85)); }
+  /* Sceneteppe: folder, skygge og oppbinding */
+  .st-curtain {
+    top: 0; bottom: 0; width: 170px;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.45), transparent 30%, transparent 70%, rgba(0,0,0,.55)),
+      repeating-linear-gradient(90deg, #04302d 0, #0b5651 9px, #12706a 15px, #0a4c48 24px, #04302d 34px);
+    box-shadow: 0 0 40px rgba(0, 0, 0, .6);
+  }
+  .st-curtain.l { left: 0; right: auto; clip-path: polygon(0 0, 100% 0, 100% 52%, 58% 66%, 82% 100%, 0 100%); }
+  .st-curtain.r { right: 0; left: auto; clip-path: polygon(0 0, 100% 0, 100% 100%, 18% 100%, 42% 66%, 0 52%); }
+  .st-valance {
+    top: 0; bottom: auto; height: 86px;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.35), transparent 40%, rgba(0,0,0,.25)),
+      repeating-linear-gradient(90deg, #052f2c 0, #0d5e58 20px, #0a4c48 40px, #052f2c 60px);
+    -webkit-mask: radial-gradient(64px 46px at 60px 40px, #000 98%, transparent 100%) 0 0 / 120px 86px repeat-x, linear-gradient(#000 0 0) 0 0 / 100% 40px no-repeat;
+            mask: radial-gradient(64px 46px at 60px 40px, #000 98%, transparent 100%) 0 0 / 120px 86px repeat-x, linear-gradient(#000 0 0) 0 0 / 100% 40px no-repeat;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,.6));
+  }
+  .st-vignette { background: radial-gradient(ellipse 78% 74% at 50% 46%, transparent 58%, rgba(1, 14, 13, .75) 100%); }
+  .st-frame { inset: 20px; border-radius: 30px; }
+
+  /* ======================================================================
+     INTRO: teppet går opp, skiltet tennes
+     ====================================================================== */
+  .v-intro { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; }
+  .v-intro .sign { animation: sign-drop 1100ms var(--bounce) 1.5s both; }
+  .v-intro .plate { margin-top: 34px; font-size: 34px; animation: rise 700ms var(--bounce) 4.9s both; }
+  .v-intro .tagline { margin-top: 64px; font-size: 76px; transform: skewX(-6deg); animation: rise 700ms var(--bounce) 4.3s both; }
+  .curtains { position: absolute; inset: 0; z-index: 9; pointer-events: none; }
+  .curtains i {
+    position: absolute; top: 0; bottom: 0; width: 51%;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.35), transparent 20%, transparent 80%, rgba(0,0,0,.45)),
+      repeating-linear-gradient(90deg, #04302d 0, #0b5651 14px, #12706a 24px, #0a4c48 38px, #04302d 52px);
+    box-shadow: 0 0 60px rgba(0,0,0,.7);
+  }
+  .curtains i:first-child { left: 0; animation: open-l 1700ms cubic-bezier(.65,0,.25,1) .5s both; }
+  .curtains i:last-child { right: 0; animation: open-r 1700ms cubic-bezier(.65,0,.25,1) .5s both; }
+  .curtains i::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 26px; background: linear-gradient(180deg, #ffd77a, var(--gold-deep)); opacity: .9; }
+  @keyframes open-l { to { transform: translateX(-100%); } }
+  @keyframes open-r { to { transform: translateX(100%); } }
+  @keyframes sign-drop { from { transform: translateY(-700px) rotate(-4deg); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(40px); } }
+
+  /* ======================================================================
+     LOBBY
+     ====================================================================== */
+  .v-lobby { display: grid; grid-template-columns: 1fr 760px; gap: 70px; align-items: center; padding-left: 190px; padding-right: 200px; }
+  .lobby-left { display: flex; flex-direction: column; align-items: center; gap: 34px; }
+  .lobby-left .plate { font-size: 34px; }
+  .crowd { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 14px; }
+  .crowd .big { display: flex; align-items: center; gap: 20px; }
+  .crowd .big .flap { font-size: 92px; }
+  .crowd .big .label { font-size: 56px; }
+  .counters { display: flex; gap: 18px; }
+  .counter { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .counter .flap { font-size: 46px; }
+  .counter .plate { font-size: 17px; }
+  .join.panel { padding: 40px 48px 46px; text-align: center; }
+  .join h2 { margin: 0 0 28px; font-size: 54px; }
+  .join .qr { width: 440px; height: 440px; margin: 0 auto; padding: 22px; background: #fff; border-radius: 10px; border: 6px solid var(--ink); box-shadow: 0 0 0 6px var(--cream), 0 10px 0 6px var(--ink); }
+  .join .how { margin: 34px 0 4px; font-size: 28px; font-weight: 600; color: var(--cream); }
+  .join .url { font-family: var(--sign); font-size: 46px; color: var(--gold); text-shadow: 0 3px 0 var(--ink); }
+
+  /* ======================================================================
+     KATEGORI
+     ====================================================================== */
+  .v-category { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 44px; }
+  .v-category .meta { font-size: 30px; color: var(--cream); }
+  .v-category .cake { width: 420px; height: 420px; animation: piece-in 900ms var(--bounce) both; filter: drop-shadow(0 20px 30px rgba(0,0,0,.5)); }
+  .v-category .cat-sign { font-size: 104px; animation: rise 800ms var(--bounce) 300ms both; }
+  @keyframes piece-in { from { opacity: 0; transform: scale(.5) rotate(-90deg); } }
+
+  /* ======================================================================
+     SPØRSMÅL / FASIT
+     ====================================================================== */
+  .v-question { display: flex; flex-direction: column; align-items: center; }
+  .topbar { position: absolute; left: 196px; right: 196px; top: 92px; height: 120px; display: grid; grid-template-columns: 300px 1fr 300px; align-items: center; }
+  .topbar .sign { justify-self: start; }
+  .topbar .mid { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .topbar .cat-sign { font-size: 36px; }
+  .topbar .meta { font-size: 22px; color: var(--cream); }
+  .topbar .right { justify-self: end; display: flex; align-items: center; gap: 18px; }
+  .topbar .tally { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .topbar .tally .flap { font-size: 46px; }
+  .topbar .tally .label-caps { font-size: 15px; color: var(--cream); }
+  .topbar .qr { width: 112px; height: 112px; padding: 7px; background: #fff; border: 4px solid var(--cream); border-radius: 8px; box-shadow: 0 5px 0 var(--ink); }
+
+  .board.panel { position: relative; width: 1480px; margin-top: 156px; padding: 38px 100px 112px; text-align: center; animation: board-in 520ms var(--bounce) both; }
+  .board.compact { padding: 26px 90px 30px; }
+  .reveal .options { margin-top: 40px !important; gap: 22px 40px; }
+  .reveal .opt { min-height: 90px; font-size: 36px; }
+  .reveal .medal { width: 70px; height: 70px; font-size: 38px; }
+  .qtext { margin: 0; font-size: 52px; font-weight: 800; line-height: 1.15; color: var(--warm); text-wrap: balance; text-shadow: 0 3px 0 rgba(0,0,0,.45); }
+  .board.compact .qtext { font-size: 42px; }
+  @keyframes board-in { from { opacity: 0; transform: translateY(-30px) scale(.97); } }
+
+  .clock { position: absolute; left: 50%; bottom: -104px; width: 206px; height: 206px; transform: translateX(-50%); }
+  .clock { border-radius: 50%; box-shadow: 0 9px 0 #6e4c0b, 0 18px 26px rgba(0,0,0,.5); }
+  .clock svg { width: 100%; height: 100%; overflow: visible; display: block; }
+  .clock .tb .tb-core { fill: #24413c; }
+  .clock .tb .tb-halo { opacity: 0; }
+  .clock .tb.on .tb-core { fill: url(#tp-bulb); }
+  .clock .tb.on .tb-halo { opacity: 1; }
+  .clock.low .tb.on .tb-core { fill: #ff8a6a; }
+  .clock .tb .tb-core, .clock .tb .tb-halo { transition: opacity 200ms, fill 200ms; }
+  .clock .num { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--digits); font-weight: 900; font-size: 82px; line-height: 1; color: var(--warm); text-shadow: 0 4px 0 #000; font-variant-numeric: tabular-nums; }
+  .clock.low .num { color: #ffc2ad; }
+  .clock.done .num { font-family: var(--sign); font-size: 54px; text-transform: uppercase; color: var(--gold); }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 40px; width: 1480px; margin-top: 128px; }
+  .opt {
+    --l: var(--a);
+    position: relative; display: flex; align-items: center; gap: 26px;
+    min-height: 104px; padding: 12px 30px 12px 16px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #0f6a63 0%, #0a524d 38%, #063f3b 100%);
+    border: 6px solid var(--l);
+    box-shadow:
+      inset 0 3px 0 rgba(255, 249, 234, .28),
+      inset 0 -6px 12px rgba(0, 0, 0, .3),
+      0 0 0 3px var(--ink),
+      0 10px 0 3px color-mix(in srgb, var(--l) 45%, var(--ink)),
+      0 18px 26px rgba(0, 0, 0, .45);
+    font-size: 40px; font-weight: 800; line-height: 1.12; color: var(--warm);
+    animation: opt-in 480ms var(--bounce) both;
+  }
+  .opt:nth-child(2) { --l: var(--b); animation-delay: 80ms; }
+  .opt:nth-child(3) { --l: var(--c); animation-delay: 160ms; }
+  .opt:nth-child(4) { --l: var(--d); animation-delay: 240ms; }
+  @keyframes opt-in { from { opacity: 0; transform: translateY(24px); } }
+  .medal {
+    flex: none; width: 86px; height: 86px; border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 38% 30%, color-mix(in srgb, var(--l) 70%, #fff), var(--l) 55%, color-mix(in srgb, var(--l) 70%, #000));
+    border: 5px solid var(--cream); box-shadow: 0 0 0 3px var(--ink), 0 5px 0 3px var(--ink);
+    font-family: var(--sign); font-size: 46px; color: var(--ink); line-height: 1;
+  }
+  .opt .label { flex: 1; }
+  .opt .tally { font-size: 40px; }
+  .opt.wrong { filter: brightness(.42) saturate(.55); animation: none; }
+  .opt.right {
+    animation: none; transform: translateY(-4px) scale(1.02);
+    background: linear-gradient(180deg, #ffe08f 0%, var(--gold) 45%, #e0a22e 100%);
+    border-color: var(--warm); color: var(--ink);
+    box-shadow: inset 0 3px 0 rgba(255,255,255,.6), 0 0 0 3px var(--ink), 0 10px 0 3px #7a540c, 0 0 70px rgba(244, 185, 66, .65);
+  }
+  .opt.right .medal { --l: var(--warm); }
+
+  .number-prompt.panel { margin-top: 160px; padding: 30px 60px; font-size: 44px; font-weight: 800; color: var(--warm); }
+
+  .scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 56px; width: 1480px; margin-top: 62px; }
+  .score.panel { padding: 16px 24px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .score .plate { font-size: 22px; margin-top: -48px; }
+  .score .flap { font-size: 60px; }
+  .score .none { font-family: var(--sign); font-size: 30px; color: var(--muted); text-transform: uppercase; padding: 18px 0; }
+  .lamps { display: flex; gap: 8px; }
+  .lamps i { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #33504b, #12302c); box-shadow: inset 0 0 0 2px #04201e; }
+  .lamps i.on { background: radial-gradient(circle at 40% 35%, #fffdf3, #ffe0a0 45%, #e9a640); box-shadow: 0 0 12px rgba(255, 210, 120, .8), inset 0 0 0 2px #7a540c; animation: lamp-on 300ms ease both; animation-delay: calc(var(--i) * 70ms + 300ms); }
+  @keyframes lamp-on { from { background: #12302c; box-shadow: none; } }
+  .callout { margin-top: 34px; }
+  .callout.plate { font-size: 26px; }
+  .callout strong { color: var(--orange); }
+
+  .numrow { display: grid; grid-template-columns: 600px 1fr; gap: 56px; width: 1480px; margin-top: 56px; align-items: stretch; }
+  .answer-board.panel { padding: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+  .answer-board .plate { font-size: 24px; }
+  .answer-board .flap { font-size: 150px; }
+  .answer-board .unit { font-family: var(--sign); font-size: 30px; text-transform: uppercase; color: var(--cream); }
+  .medians { display: grid; gap: 20px; align-content: center; }
+  .mrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 20px; padding: 16px 22px; border-radius: 14px; background: linear-gradient(180deg, #0a524d, var(--teal)); border: 4px solid var(--cream); box-shadow: 0 0 0 3px var(--ink), 0 8px 0 3px var(--ink); }
+  .mrow .who { font-family: var(--sign); font-size: 34px; text-transform: uppercase; }
+  .mrow .flap { font-size: 62px; }
+  .mrow .none { font-family: var(--sign); font-size: 24px; color: var(--muted); text-transform: uppercase; }
+  .medians .caption { font-family: var(--sign); font-size: 24px; text-transform: uppercase; letter-spacing: .05em; color: var(--cream); }
+
+  /* ======================================================================
+     STILLINGEN
+     ====================================================================== */
+  .v-board { display: flex; flex-direction: column; align-items: center; padding-top: 104px; }
+  .v-board > .lettering { font-size: 96px; transform: skewX(-6deg); }
+  .podiums { width: 1500px; flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 56px; align-items: end; margin-top: 30px; padding-bottom: 20px; }
+  .podium { position: relative; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+  .podium .cake { width: 330px; height: 330px; filter: drop-shadow(0 18px 24px rgba(0,0,0,.5)); }
+  .podium .stand.panel { width: 100%; padding: 22px 18px 24px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .podium .name { font-size: 44px; text-align: center; }
+  .podium .flap { font-size: 54px; }
+  .podium .of { font-family: var(--sign); font-size: 20px; text-transform: uppercase; color: var(--cream); letter-spacing: .05em; }
+  .podium .crown { position: absolute; top: -26px; font-size: 22px; z-index: 2; }
+  .legend { display: flex; gap: 34px; justify-content: center; margin-top: 50px; font-family: var(--sign); font-size: 22px; text-transform: uppercase; letter-spacing: .03em; color: var(--cream); }
+
+  /* ======================================================================
+     TOPPLISTE
+     ====================================================================== */
+  .v-leader { display: grid; grid-template-columns: 560px 1fr; gap: 80px; align-items: center; }
+  .v-leader .title { font-size: 112px; transform: skewX(-6deg); }
+  .v-leader .sub { margin-top: 30px; font-size: 26px; color: var(--cream); max-width: 26ch; }
+  .v-leader ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 22px; }
+  .v-leader li { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: 24px; padding: 14px 26px 14px 16px; border-radius: 16px; background: linear-gradient(180deg, #0a524d, var(--teal)); border: 5px solid var(--cream); box-shadow: 0 0 0 3px var(--ink), 0 9px 0 3px var(--ink); animation: opt-in 500ms var(--bounce) both; }
+  .v-leader li:nth-child(2) { animation-delay: 90ms; } .v-leader li:nth-child(3) { animation-delay: 180ms; } .v-leader li:nth-child(4) { animation-delay: 270ms; } .v-leader li:nth-child(5) { animation-delay: 360ms; }
+  .v-leader .medal { --l: var(--cyan); width: 76px; height: 76px; font-family: var(--digits); font-size: 40px; }
+  .v-leader li:first-child { border-color: var(--gold); box-shadow: 0 0 0 3px var(--ink), 0 9px 0 3px #7a540c, 0 0 40px rgba(244, 185, 66, .4); }
+  .v-leader li:first-child .medal { --l: var(--gold); }
+  .v-leader .nick { font-size: 44px; font-weight: 800; color: var(--warm); line-height: 1.1; }
+  .v-leader .grp { display: block; font-family: var(--sign); font-size: 18px; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; }
+  .v-leader .flap { font-size: 46px; }
+
+  /* ======================================================================
+     VINNER
+     ====================================================================== */
+  .v-winner { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; padding-top: 110px; }
+  .v-winner .plate { font-size: 34px; animation: rise 600ms var(--bounce) 300ms both; }
+  .v-winner .row { display: flex; align-items: center; gap: 70px; }
+  .v-winner .cake { width: 340px; height: 340px; animation: piece-in 1200ms var(--bounce) 200ms both; filter: drop-shadow(0 18px 24px rgba(0,0,0,.5)); }
+  .v-winner .sign { padding: 50px 80px 58px; }
+  .v-winner .sign .lettering { font-size: 130px; }
+
+
+  /* ======================================================================
+     SHOWSCENER: kategorier, lag, regler, finale, avslutning
+     ====================================================================== */
+  .v-cats { display: grid; grid-template-columns: 1fr 400px 1fr; align-items: center; gap: 40px; padding-top: 110px; }
+  .v-cats .col { display: flex; flex-direction: column; gap: 40px; }
+  .v-cats .col.l { align-items: flex-end; } .v-cats .col.r { align-items: flex-start; }
+  .v-cats .cat-sign { font-size: 38px; animation: rise 600ms var(--bounce) both; animation-delay: calc(var(--i) * 450ms + 400ms); }
+  .v-cats .cake { width: 400px; height: 400px; animation: piece-in 900ms var(--bounce) both; filter: drop-shadow(0 20px 30px rgba(0,0,0,.5)); }
+  .v-cats .wedge { animation: wedge-win 700ms var(--bounce) both; }
+  .v-cats .title { position: absolute; top: 112px; left: 0; right: 0; text-align: center; font-size: 76px; transform: skewX(-6deg); }
+
+  .v-teams { display: flex; flex-direction: column; align-items: center; padding-top: 104px; }
+  .v-teams > .lettering { font-size: 84px; transform: skewX(-6deg); }
+  .v-teams .podium.hidden .cake { opacity: .18; filter: grayscale(1); }
+  .v-teams .podium.hidden .stand { filter: brightness(.45); }
+  .v-teams .podium.new { animation: team-in 900ms var(--bounce) both; }
+  @keyframes team-in { from { opacity: 0; transform: translateY(80px) scale(.9); } }
+
+  .v-rules { display: flex; flex-direction: column; align-items: center; padding-top: 110px; gap: 34px; }
+  .v-rules > .lettering { font-size: 84px; transform: skewX(-6deg); }
+  .rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 44px; width: 1480px; margin-top: 20px; }
+  .rule.panel { padding: 34px 30px 36px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; animation: opt-in 600ms var(--bounce) both; animation-delay: calc(var(--i) * 300ms + 200ms); }
+  .rule .medal { --l: var(--gold); width: 96px; height: 96px; font-size: 54px; }
+  .rule h3 { margin: 0; font-family: var(--sign); font-size: 40px; text-transform: uppercase; line-height: 1; color: var(--warm); }
+  .rule p { margin: 0; font-size: 28px; font-weight: 600; color: var(--cream); line-height: 1.3; }
+  .v-rules .audience { margin-top: 40px; font-size: 30px; animation: rise 600ms var(--bounce) 1.4s both; }
+
+  .v-finale { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 46px; padding-top: 90px; }
+  .v-finale .sign { padding: 56px 120px 64px; animation: sign-drop 1000ms var(--bounce) both; }
+  .v-finale .sign .lettering { font-size: 170px; }
+  .v-finale .plate { font-size: 40px; animation: rise 700ms var(--bounce) .9s both; }
+  .mini-cakes { display: flex; gap: 70px; animation: rise 700ms ease 1.3s both; }
+  .mini-cakes > div { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .mini-cakes .cake { width: 130px; height: 130px; }
+  .mini-cakes .label-caps { font-size: 22px; color: var(--cream); }
+
+  .v-outro { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 56px; }
+  .v-outro .plate { font-size: 46px; }
+
+  /* Spørsmål uten alternativer på storskjermen (lagene skal svare fritt) */
+  .salen { margin-top: 136px; display: flex; align-items: center; gap: 40px; }
+  .salen .plate { font-size: 34px; }
+  .salen .flap { font-size: 74px; }
+  .salen .label-caps { font-size: 22px; color: var(--cream); display: block; text-align: center; margin-top: 8px; }
+  .salen.closed .plate { background: #cdbf9f; }
+
+  /* Kategori-innslag før spørsmålet */
+  .cat-intro { position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; background: radial-gradient(ellipse at 50% 45%, color-mix(in srgb, var(--cat) 35%, var(--deep)), var(--deep) 70%); animation: cat-out 600ms ease 3.4s both; }
+  .cat-intro .cake { width: 380px; height: 380px; animation: piece-in 900ms var(--bounce) both; filter: drop-shadow(0 20px 30px rgba(0,0,0,.5)); }
+  .cat-intro .cat-sign { font-size: 104px; animation: rise 700ms var(--bounce) 300ms both; }
+  .cat-intro .label-caps { font-size: 30px; color: var(--cream); }
+  @keyframes cat-out { to { opacity: 0; visibility: hidden; transform: scale(1.06); } }
+
+  /* «SNU TAVLENE!» når tiden er ute */
+  .flip { position: absolute; left: 50%; top: 600px; z-index: 9; transform: translate(-50%, 0) rotate(-3deg); animation: flip-in 600ms var(--bounce) both; }
+  .flip .sign { padding: 34px 80px 42px; }
+  .flip .sign .lettering { font-size: 110px; }
+  @keyframes flip-in { from { transform: translate(-50%, 120px) rotate(-12deg) scale(.4); opacity: 0; } }
+
+  /* Kakestykke-banner på fasitskjermen */
+  .award { position: absolute; left: 50%; bottom: 70px; z-index: 9; display: flex; align-items: center; gap: 28px; padding: 18px 40px 18px 22px; transform: translateX(-50%); animation: award-in 700ms var(--bounce) both, cat-out 500ms ease 4.2s both; }
+  .award .cake { width: 120px; height: 120px; }
+  .award .lettering { font-size: 54px; white-space: nowrap; }
+  @keyframes award-in { from { transform: translate(-50%, 160px); } }
+
+  .tie { margin-top: 18px; font-size: 32px; }
+
+  .offline { position: absolute; z-index: 10; right: 60px; bottom: 44px; padding: 10px 18px; border-radius: 10px; background: var(--ink); border: 3px solid var(--danger); font-weight: 800; font-size: 22px; color: var(--danger); }
+</style>
+</head>
+<body>
+<div id="stage" aria-live="polite">
+  <div class="studio" aria-hidden="true">
+    <div class="st-wall"></div>
+    <div class="st-spots"><i></i><i></i><i></i></div>
+    <div class="st-floor"></div>
+    <div class="st-curtain l"></div><div class="st-curtain r"></div>
+    <div class="st-valance"></div>
+    <div class="st-vignette"></div>
+    <div class="st-frame" id="frame"></div>
+  </div>
+  <div id="scene"></div>
+</div>
+<script type="module">
+import { fmt, api, syncClock, now, secondsLeft, h, cakeSVG, qrSVG, catOf, groupName, teamName, LETTERS, poll, pursuitSign, bulbFrame, flap } from '/shared.js';
+
+const stage = document.getElementById('stage');
+const scene = document.getElementById('scene');
+const joinUrl = location.origin + '/';
+const prettyUrl = location.host;
+let current = null;  // siste tilstand
+let renderedKey = '';
+let shownCakes = {}; // kakestillingen sist den ble vist, for å animere nye stykker
+
+function fit() {
+  const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${k})`;
+}
+addEventListener('resize', fit); fit();
+
+// Lyspære-rammen rundt hele scenen
+const frameBulbs = bulbFrame(document.getElementById('frame'), { spacing: 46, r: 7, radius: 30 });
+function chaseFrame(delay = 0) {
+  frameBulbs.classList.remove('chase');
+  frameBulbs.style.setProperty('--chase-delay', `${delay}ms`);
+  void frameBulbs.getBoundingClientRect();
+  frameBulbs.classList.add('chase');
+}
+
+const SVGNS = 'http://www.w3.org/2000/svg';
+const totalJoined = (st) => Object.values(st.players).reduce((a, b) => a + b, 0);
+const caps = (t) => h('span', { class: 'label-caps' }, t);
+
+function crowd(st) {
+  const total = totalJoined(st);
+  return h('div', { class: 'crowd', id: 'joined' },
+    h('div', { class: 'big' }, flap(total), h('span', { class: 'lettering flat label' }, total ? 'er med!' : 'er med')),
+    h('div', { class: 'counters', id: 'groups' }, st.game.groups.map((g) =>
+      h('div', { class: 'counter' }, flap(String(st.players[g.id]).padStart(2, '0')), h('span', { class: 'plate' }, g.name)))));
+}
+
+function intro(st) {
+  return h('section', { class: 'view v-intro' },
+    pursuitSign({ scale: 1.08, chase: true, chaseDelay: 2600 }),
+    h('div', { class: 'tagline lettering flat' }, 'Let the games begin!'),
+    h('div', { class: 'plate' }, st.game.event),
+    h('div', { class: 'curtains' }, h('i'), h('i')));
+}
+
+function lobby(st) {
+  return h('section', { class: 'view v-lobby' },
+    h('div', { class: 'lobby-left' },
+      pursuitSign({ scale: 0.78, chase: true }),
+      h('div', { class: 'plate' }, st.game.event),
+      crowd(st)),
+    h('div', { class: 'join panel' },
+      h('h2', { class: 'lettering flat' }, 'Bli med på mobilen'),
+      qrSVG(joinUrl),
+      h('p', { class: 'how' }, 'Skann QR-koden eller gå til'),
+      h('div', { class: 'url' }, prettyUrl)));
+}
+
+function category(st) {
+  const c = catOf(st.game, st.question.cat);
+  return h('section', { class: 'view v-category', style: { '--cat': c.color } },
+    h('div', { class: 'meta label-caps' }, `${st.question.round}, spørsmål ${st.question.n} av ${st.totalQuestions}`),
+    cakeSVG(st.game.categories, [c.id], c.name, { fresh: [c.id] }),
+    h('div', { class: 'cat-sign' }, c.name));
+}
+
+// Spilleklokke: én lyspære per sekund som slukker etter hvert.
+// Klokka bygges én gang; deretter oppdateres bare pærene og tallet (ingen omtegning = ingen flimring).
+function timerLeft(st) { return st.phase === 'ask' ? st.duration : secondsLeft(st.deadline); }
+function timer(st) {
+  const total = st.duration;
+  const el = h('div', { class: 'clock', id: 'timer', role: 'timer' });
+  const R = 103, cx = 103;
+  let bulbs = '';
+  for (let i = 0; i < total; i++) {
+    const a = (i / total) * 2 * Math.PI - Math.PI / 2;
+    const x = (cx + 85 * Math.cos(a)).toFixed(2), y = (cx + 85 * Math.sin(a)).toFixed(2);
+    bulbs += `<g class="tb" data-i="${i}"><circle class="tb-halo" cx="${x}" cy="${y}" r="15" fill="url(#tp-halo)"/><circle cx="${x}" cy="${y}" r="7.6" fill="#3a2a0c"/><circle class="tb-core" cx="${x}" cy="${y}" r="6.2"/></g>`;
+  }
+  el.insertAdjacentHTML('afterbegin', `<svg viewBox="0 0 ${2 * R} ${2 * R}" aria-hidden="true">
+    <circle cx="${cx}" cy="${cx}" r="${R - 2}" fill="url(#clock-bezel)" stroke="#021c1b" stroke-width="4.5"/>
+    <circle cx="${cx}" cy="${cx}" r="${R - 12}" fill="#fff1d2" stroke="#021c1b" stroke-width="2.6"/>
+    <circle cx="${cx}" cy="${cx}" r="${R - 19}" fill="#062e2d" stroke="#021c1b" stroke-width="2.6"/>
+    ${bulbs}
+    <circle cx="${cx}" cy="${cx}" r="64" fill="#021c1b"/>
+  </svg>`);
+  el.append(h('span', { class: 'num' }, ''));
+  updateTimer(el, st);
+  return el;
+}
+function updateTimer(el, st) {
+  const left = timerLeft(st);
+  if (el.dataset.left === String(left)) return;
+  el.dataset.left = left;
+  el.classList.toggle('done', left === 0);
+  el.classList.toggle('low', left > 0 && left <= 5);
+  el.setAttribute('aria-label', `${left} sekunder igjen`);
+  el.querySelectorAll('.tb').forEach((g) => g.classList.toggle('on', Number(g.dataset.i) < left));
+  el.querySelector('.num').textContent = left === 0 ? 'Tid!' : left;
+}
+
+function topbar(st, count) {
+  const c = catOf(st.game, st.question.cat);
+  return h('div', { class: 'topbar', style: { '--cat': c.color } },
+    pursuitSign({ scale: 0.27, bulbs: true }),
+    h('div', { class: 'mid' }, h('span', { class: 'cat-sign' }, c.name), h('span', { class: 'meta label-caps' }, `${st.question.round}, spørsmål ${st.question.inRound ?? st.question.n} av ${st.question.roundSize ?? st.totalQuestions}`)),
+    h('div', { class: 'right' },
+      count != null ? h('div', { class: 'tally' }, flap(String(count).padStart(3, '0')), h('span', { class: 'label-caps' }, 'Svar fra salen')) : qrSVG(joinUrl)));
+}
+
+// Under spørsmålet vises IKKE svaralternativene på storskjermen: lagene skal svare fritt på tavla.
+// Alternativene står bare på mobilene, og vises her først ved fasit.
+function question(st) {
+  const q = st.question;
+  const c = catOf(st.game, q.cat);
+  const open = st.audienceOpen !== false;
+  const salen = open
+    ? h('div', { class: 'salen' },
+        h('span', { class: 'plate' }, q.type === 'mc' ? 'Salen svarer på mobilen: A, B, C eller D' : `Salen gjetter på mobilen${q.unit ? ` (${q.unit})` : ''}`),
+        h('div', {}, h('span', { id: st.phase === 'question' ? 'answers' : null }, flap(String(st.answers ?? 0).padStart(3, '0'))), h('span', { class: 'label-caps' }, 'svar inne')))
+    : h('div', { class: 'salen closed' }, h('span', { class: 'plate' }, 'Nå svarer bare lagene på scenen'));
+  return h('section', { class: 'view v-question', style: { '--cat': c.color } },
+    topbar(st, null),
+    h('div', { class: 'board panel' }, h('p', { class: 'qtext' }, q.text), timer(st)),
+    salen);
+}
+
+function ask(st) {
+  const c = catOf(st.game, st.question.cat);
+  const view = question(st);
+  view.append(h('div', { class: 'cat-intro', style: { '--cat': c.color } },
+    h('div', { class: 'label-caps' }, `${st.question.round}, spørsmål ${st.question.inRound} av ${st.question.roundSize}`),
+    cakeSVG(st.game.categories, [c.id], c.name, { fresh: [c.id] }),
+    h('div', { class: 'cat-sign' }, c.name)));
+  return view;
+}
+
+function lampRow(pct) {
+  const on = Math.round((pct ?? 0) / 10);
+  return h('div', { class: 'lamps' }, Array.from({ length: 10 }, (_, i) => h('i', { class: i < on ? 'on' : '', style: { '--i': i } })));
+}
+
+function reveal(st) {
+  const q = st.question;
+  const r = st.reveal;
+  const c = catOf(st.game, q.cat);
+  const parts = [topbar(st, r.total), h('div', { class: 'board panel compact' }, h('p', { class: 'qtext' }, q.text))];
+  if (q.type === 'mc') {
+    const opts = q.options.map((o, i) => {
+      const el = h('div', { class: 'opt ' + (i === r.answer ? 'right' : 'wrong') },
+        h('span', { class: 'medal' }, LETTERS[i]), h('span', { class: 'label' }, o),
+        h('span', { class: 'tally' }, flap(r.dist[i])));
+      if (i === r.answer) bulbFrame(el, { spacing: 34, r: 5.5, outset: 18, radius: 38, chase: true });
+      return el;
+    });
+    const best = Math.max(...st.game.groups.map((g) => r.stats[g.id].pct ?? -1));
+    parts.push(
+      h('div', { class: 'options' }, opts),
+      h('div', { class: 'scores' }, st.game.groups.map((g) => {
+        const s = r.stats[g.id];
+        const el = h('div', { class: 'score panel' },
+          h('span', { class: 'plate' }, g.name),
+          s.pct == null ? h('div', { class: 'none' }, 'Ingen svar') : flap(`${s.pct}%`, 'gold'),
+          lampRow(s.pct));
+        if (s.pct != null && s.pct === best && best > 0) bulbFrame(el, { spacing: 38, r: 5.5, outset: 30, radius: 46, chase: true, chaseDelay: 600 });
+        return el;
+      })),
+      r.fastest ? h('div', { class: 'callout plate' }, 'Raskest med riktig svar: ', h('strong', {}, r.fastest.nick), ` (${String(r.fastest.seconds).replace('.', ',')} s)`) : null);
+  } else {
+    parts.push(
+      h('div', { class: 'numrow' },
+        h('div', { class: 'answer-board panel' }, h('span', { class: 'plate' }, 'Riktig svar'), flap(r.answerLabel.split(' (')[0], 'gold'), q.unit ? h('div', { class: 'unit' }, q.unit) : null),
+        h('div', { class: 'medians' },
+          h('div', { class: 'caption' }, 'Salen gjettet (median)'),
+          st.game.groups.map((g) => {
+            const m = r.stats[g.id].median;
+            return h('div', { class: 'mrow' }, h('span', { class: 'who' }, g.name), m == null ? h('span', { class: 'none' }, 'Ingen svar') : flap(fmt(m)));
+          }))),
+      r.closest ? h('div', { class: 'callout plate' }, 'Nærmest i salen: ', h('strong', {}, r.closest.nick), ` (${fmt(r.closest.value)})`) : null);
+  }
+  return h('section', { class: 'view v-question reveal', style: { '--cat': c.color } }, parts);
+}
+
+function board(st) {
+  const total = st.game.categories.length;
+  const counts = st.game.teams.map((t) => st.cakes[t.id].length);
+  const top = Math.max(...counts);
+  const leaders = counts.filter((n) => n === top).length;
+  const view = h('section', { class: 'view v-board' },
+    h('h2', { class: 'lettering', style: { margin: 0 } }, st.tie ? 'Uavgjort!' : 'Stillingen'),
+    st.tie ? h('div', { class: 'plate tie' }, 'Like mange kakestykker: vinneren avgjøres med et ekstra spørsmål') : null,
+    h('div', { class: 'podiums' }, st.game.teams.map((t) => {
+      const earned = st.cakes[t.id];
+      const fresh = earned.filter((id) => !(shownCakes[t.id] ?? []).includes(id));
+      const stand = h('div', { class: 'stand panel' },
+        h('div', { class: 'name lettering flat' }, t.name),
+        flap(`${earned.length}/${total}`),
+        h('div', { class: 'of' }, earned.length === total ? 'Full kake!' : 'kakestykker'));
+      if (top > 0 && earned.length === top && leaders === 1) bulbFrame(stand, { spacing: 38, r: 5.5, outset: 32, radius: 48, chase: true, chaseDelay: 900 });
+      return h('div', { class: 'podium' },
+        cakeSVG(st.game.categories, earned, `${t.name}: ${earned.length} av ${total}`, { fresh }),
+        stand);
+    })),
+    h('div', { class: 'legend' }, st.game.categories.map((c) => h('span', { class: 'cat-mark', style: { '--cat': c.color } }, c.name))));
+  shownCakes = JSON.parse(JSON.stringify(st.cakes));
+  return view;
+}
+
+function leaderboard(st) {
+  return h('section', { class: 'view v-leader' },
+    h('div', {},
+      h('h2', { class: 'lettering title', style: { margin: 0 } }, h('span', { style: { display: 'block' } }, 'Skarpest'), h('span', { style: { display: 'block' } }, 'i salen')),
+      h('p', { class: 'sub' }, 'Poeng fra mobilen: riktige svar, og hvor raskt dere svarte.')),
+    st.leaderboard?.length
+      ? h('ol', {}, st.leaderboard.map((p, i) => h('li', {},
+          h('span', { class: 'medal' }, i + 1),
+          h('span', { class: 'nick' }, p.nick, h('span', { class: 'grp' }, groupName(st.game, p.group))),
+          flap(p.total, i === 0 ? 'gold' : ''))))
+      : h('p', { class: 'plate', style: { fontSize: '30px' } }, 'Ingen poeng ennå'));
+}
+
+function winner(st) {
+  const all = st.game.categories.map((c) => c.id);
+  const sign = h('div', { class: 'sign', style: { '--s': 1 } }, h('div', { class: 'lettering' }, teamName(st.game, st.winner)));
+  bulbFrame(sign, { spacing: 44, r: 7.5, inset: 15, outset: 30, radius: 80, chase: true, chaseDelay: 500 });
+  return h('section', { class: 'view v-winner' },
+    h('div', { class: 'plate' }, `Vinner av Trainee Pursuit ${st.game.event.replace(/\D+/g, '')}`),
+    h('div', { class: 'row' }, cakeSVG(st.game.categories, all, 'Full kake'), sign));
+}
+
+function categories(st) {
+  const cats = st.game.categories;
+  const half = Math.ceil(cats.length / 2);
+  const sign = (c, i) => h('div', { class: 'cat-sign', style: { '--cat': c.color, '--i': i } }, c.name);
+  const cake = cakeSVG(cats, cats.map((c) => c.id), 'Seks kategorier');
+  cake.querySelectorAll('.wedge').forEach((w, i) => { w.style.animationDelay = `${i * 450 + 400}ms`; });
+  return h('section', { class: 'view v-cats' },
+    h('h2', { class: 'lettering title', style: { margin: 0 } }, 'Seks kategorier'),
+    h('div', { class: 'col l' }, cats.slice(0, half).map((c, i) => sign(c, i))),
+    cake,
+    h('div', { class: 'col r' }, cats.slice(half).map((c, i) => sign(c, i + half))));
+}
+
+function teams(st) {
+  const total = st.game.categories.length;
+  return h('section', { class: 'view v-teams' },
+    h('h2', { class: 'lettering', style: { margin: 0 } }, 'Kveldens lag'),
+    h('div', { class: 'podiums' }, st.game.teams.map((t, i) => {
+      const shown = i < st.teamsShown;
+      const stand = h('div', { class: 'stand panel' },
+        h('div', { class: 'name lettering flat' }, shown ? t.name : '?'),
+        flap(`0/${total}`),
+        h('div', { class: 'of' }, 'kakestykker'));
+      if (shown && i === st.teamsShown - 1) bulbFrame(stand, { spacing: 38, r: 5.5, outset: 32, radius: 48, chase: true, chaseDelay: 500 });
+      return h('div', { class: 'podium' + (shown ? (i === st.teamsShown - 1 ? ' new' : '') : ' hidden') },
+        cakeSVG(st.game.categories, [], t.name), stand);
+    })));
+}
+
+function rules(st) {
+  const rule = (n, title, text) => h('div', { class: 'rule panel', style: { '--i': n } }, h('span', { class: 'medal' }, n), h('h3', {}, title), h('p', {}, text));
+  return h('section', { class: 'view v-rules' },
+    h('h2', { class: 'lettering', style: { margin: 0 } }, 'Slik spiller vi'),
+    h('div', { class: 'rules' },
+      rule(1, 'Velg din spiller', 'Laget velger hvem som svarer. Alle svarer på to kategorier.'),
+      rule(2, '20 sekunder', 'Skriv svaret på tavla før klokka slukker.'),
+      rule(3, 'Riktig = kakestykke', 'Første lag til full kake vinner!')),
+    h('div', { class: 'plate audience' }, 'Salen: skann QR-koden og spill med. Raskeste riktige svar vinner premie!'));
+}
+
+function finale(st) {
+  const total = st.game.categories.length;
+  const sign = h('div', { class: 'sign', style: { '--s': 1 } }, h('div', { class: 'lettering' }, 'Finalen'));
+  bulbFrame(sign, { spacing: 44, r: 7.5, inset: 15, outset: 30, radius: 80, chase: true, chaseDelay: 700 });
+  return h('section', { class: 'view v-finale' },
+    sign,
+    h('div', { class: 'plate' }, 'Nærmest svaret vinner kakestykket'),
+    h('div', { class: 'mini-cakes' }, st.game.teams.map((t) => h('div', {},
+      cakeSVG(st.game.categories, st.cakes[t.id], t.name), h('span', { class: 'label-caps' }, `${t.name} ${st.cakes[t.id].length}/${total}`)))));
+}
+
+function outro(st) {
+  return h('section', { class: 'view v-outro' },
+    pursuitSign({ scale: 1, chase: true }),
+    h('div', { class: 'plate' }, 'Takk for i kveld!'));
+}
+
+const views = { intro, categories, teams, rules, lobby, ask, category, question, reveal, board, finale, leaderboard, winner, outro };
+
+// Lyd og musikk styres fra kontrollpanelet. Storskjermen viser aldri lydoppsett.
+
+// ---------- Tegning ----------
+let lastPhase = null;
+let lastCakes = null;
+let flippedFor = null;
+const viewKey = (st) => [st.phase, st.step, st.question?.id, st.teamsShown, st.tie, st.winner, ['board', 'leaderboard', 'lobby'].includes(st.phase) ? st.rev : ''].join('|');
+
+function awardBanner(st, teamId, catId) {
+  const c = catOf(st.game, catId);
+  const el = h('div', { class: 'award panel' },
+    cakeSVG(st.game.categories, st.cakes[teamId], teamName(st.game, teamId), { fresh: [catId] }),
+    h('div', { class: 'lettering' }, `${teamName(st.game, teamId)} tar ${c.name.toLowerCase()}!`));
+  scene.querySelector('.award')?.remove();
+  scene.firstElementChild?.append(el);
+}
+
+function render(st) {
+  const key = viewKey(st);
+  if (key !== renderedKey) {
+    const prevPhase = lastPhase;
+    renderedKey = key;
+    stage.dataset.phase = st.phase;
+    scene.replaceChildren((views[st.phase] ?? lobby)(st));
+    if (st.phase === 'intro') chaseFrame(3200);
+    else if (st.phase === 'winner' || (st.phase === 'lobby' && prevPhase === 'intro')) chaseFrame(0);
+    lastPhase = st.phase;
+  } else {
+    const a = document.getElementById('answers'); if (a) a.replaceChildren(flap(String(st.answers).padStart(3, '0')));
+    const j = document.getElementById('joined'); if (j) j.replaceWith(crowd(st));
+    // Nye kakestykker mens fasiten vises: banner + pling
+    if (st.phase === 'reveal' && lastCakes && st.question) {
+      for (const t of st.game.teams) {
+        if (st.cakes[t.id].includes(st.question.cat) && !lastCakes[t.id]?.includes(st.question.cat)) awardBanner(st, t.id, st.question.cat);
+      }
+    }
+  }
+  lastCakes = JSON.parse(JSON.stringify(st.cakes));
+}
+
+// Spilleklokka: oppdateres hvert skjermbilde (requestAnimationFrame), slik at sekundskiftene kommer
+// i jevn takt. updateTimer gjør bare noe når tallet faktisk endres. Når tiden er ute: «Snu tavlene!».
+function tick() {
+  requestAnimationFrame(tick);
+  if (current?.phase !== 'question') return;
+  const t = document.getElementById('timer');
+  if (t) updateTimer(t, current);
+  if (secondsLeft(current.deadline) === 0 && flippedFor !== current.deadline) {
+    flippedFor = current.deadline;
+    const sign = h('div', { class: 'sign', style: { '--s': 1 } }, h('div', { class: 'lettering' }, 'Snu tavlene!'));
+    bulbFrame(sign, { spacing: 40, r: 7, inset: 15, outset: 30, radius: 80, chase: true });
+    scene.firstElementChild?.append(h('div', { class: 'flip' }, sign));
+  }
+}
+requestAnimationFrame(tick);
+
+let offlineEl;
+poll(async () => {
+  try {
+    const st = await api('state');
+    syncClock(st.serverNow);
+    current = st;
+    render(st);
+    offlineEl?.remove(); offlineEl = null;
+  } catch (e) {
+    if (!offlineEl) { offlineEl = h('div', { class: 'offline' }, 'Mistet kontakt med serveren. Prøver igjen …'); stage.append(offlineEl); }
+  }
+}, 1000);
+</script>
+</body>
+</html>

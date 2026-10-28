@@ -1,0 +1,5 @@
+node_modules/
+.netlify/
+# Musikk er opphavsrettsbeskyttet og lastes inn lokalt på storskjerm-PC-en
+public/audio/*.mp3
+*.mp3

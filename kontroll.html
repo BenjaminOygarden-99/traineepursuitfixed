@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Trainee Pursuit – kontrollpanel</title>
+<link rel="stylesheet" href="/shared.css">
+<style>
+  /* Backstage: samme show, men arbeidsflate. Lite dekor, høy tetthet. */
+  body { font-size: 16px; background: linear-gradient(180deg, var(--deep), var(--ink)) fixed; min-height: 100vh; }
+  header { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; padding: 10px 24px; background: var(--ink); border-bottom: 4px solid var(--gold); box-shadow: 0 4px 0 #6e4c0b; }
+  header .brand { display: flex; align-items: center; gap: 14px; }
+  header .brand small { font-family: var(--sign); font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--gold); }
+  .phase-now { display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px; border-radius: 8px; background: #3a0d0a; border: 2px solid var(--coral); font-family: var(--sign); font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: #ffc9be; }
+  .phase-now::before { content: ''; width: 11px; height: 11px; border-radius: 50%; background: #ff5b45; box-shadow: 0 0 10px #ff5b45; }
+  .phase-now strong { color: var(--warm); font-weight: 700; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; padding: 22px 24px 40px; max-width: 1500px; margin: 0 auto; }
+  @media (max-width: 960px) { .layout { grid-template-columns: minmax(0, 1fr); padding: 14px; } header { padding: 10px 14px; } }
+  .box { background: linear-gradient(180deg, #0a4c48, var(--teal)); border: 3px solid var(--cream); border-radius: 12px; padding: 16px 18px 18px; margin-bottom: 22px; box-shadow: 0 0 0 2px var(--ink), 0 6px 0 2px var(--ink); }
+  h2 { font-family: var(--sign); font-size: 16px; text-transform: uppercase; letter-spacing: .06em; margin: 0 0 12px; color: var(--gold); }
+  a { color: var(--cream); }
+
+  /* Knapper */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 9px 15px; border-radius: 10px; border: 3px solid var(--ink); background: linear-gradient(180deg, #146d66, #0b5651); color: var(--warm); font-weight: 800; text-decoration: none; box-shadow: inset 0 2px 0 rgba(255,249,234,.2), 0 4px 0 var(--ink); transition: transform 70ms; }
+  .btn:not(.primary):not(.danger):hover:not(:disabled) { background: linear-gradient(180deg, #1a7f77, #0e625c); }
+  .btn.primary:hover:not(:disabled) { background: linear-gradient(180deg, #ffe9ad, #f7c75e 55%, #e8ad3a); }
+  .btn:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 2px 0 rgba(255,249,234,.2), 0 1px 0 var(--ink); }
+  .btn.primary { background: linear-gradient(180deg, #ffe08f, var(--gold) 55%, #e0a22e); color: var(--ink); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 4px 0 #6e4c0b; }
+  .btn.go { outline: 3px solid var(--coral); outline-offset: 2px; }
+  .btn.go::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #ff5b45; box-shadow: 0 0 8px #ff5b45; }
+  .btn.danger { background: #3a0d0a; color: #ffc9be; border-color: var(--coral); box-shadow: 0 4px 0 #1c0504; }
+  .btn.danger:hover:not(:disabled) { background: #551510; }
+  .btn.danger[data-sure] { background: var(--coral); color: var(--ink); }
+  .btn:disabled { opacity: .35; cursor: default; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+  /* Aktivt spørsmål */
+  .current { border-left: 8px solid var(--cat, var(--line)); padding-left: 14px; }
+  .current .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; color: var(--cream); font-size: 14px; font-weight: 600; }
+  .current .meta .cat-sign { font-size: 13px; }
+  .current .q { font-size: 21px; font-weight: 800; line-height: 1.3; margin: 12px 0; color: var(--warm); }
+  .current .facit { display: inline-block; padding: 8px 12px; border-radius: 8px; background: var(--ink); border: 2px dashed var(--green); color: var(--muted); }
+  .current .facit strong { color: var(--green); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+  .steps .btn { min-height: 64px; font-size: 17px; }
+  @media (max-width: 520px) { .steps { grid-template-columns: 1fr; } }
+  .live { margin-top: 14px; padding: 10px 14px; border-radius: 8px; background: var(--ink); font-size: 16px; color: var(--cream); }
+  .live strong { font-family: var(--digits); font-weight: 900; font-size: 26px; color: var(--gold); }
+
+  /* Spørsmålsliste */
+  .qlist { list-style: none; margin: 0; padding: 0; }
+  .qlist li { display: grid; grid-template-columns: 26px 16px 1fr auto; gap: 10px; align-items: center; padding: 6px 8px; border-bottom: 1px solid var(--line); border-radius: 8px; }
+  .qlist li.sel { background: rgba(244, 185, 66, .14); box-shadow: inset 0 0 0 2px var(--gold); border-bottom-color: transparent; }
+  .qlist .dot { width: 16px; height: 16px; border-radius: 50%; background: conic-gradient(from -30deg, currentColor 0 60deg, var(--ink) 60deg); border: 2px solid var(--cream); }
+  .qlist .n { color: var(--muted); text-align: right; font-weight: 600; }
+  .qlist .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .qlist .round-sep { display: block; font-family: var(--sign); text-transform: uppercase; letter-spacing: .06em; padding: 14px 8px 6px; color: var(--gold); border: 0; font-size: 14px; }
+  .qlist .btn { min-height: 32px; padding: 3px 12px; font-size: 14px; }
+
+  /* Kakestykker som resultattavle */
+  .board-wrap { overflow-x: auto; }
+  table.cakes { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+  table.cakes th, table.cakes td { padding: 3px; text-align: center; }
+  table.cakes th[scope=row] { text-align: left; font-family: var(--sign); text-transform: uppercase; font-size: 15px; letter-spacing: .03em; padding-left: 12px; white-space: nowrap; }
+  table.cakes tbody tr { background: var(--ink); }
+  table.cakes tbody th:first-child { border-radius: 10px 0 0 10px; }
+  table.cakes tbody td:last-child { border-radius: 0 10px 10px 0; }
+  table.cakes thead th { font-size: 11px; line-height: 1.15; color: var(--cream); font-weight: 600; vertical-align: bottom; }
+  table.cakes thead .cat-mark { flex-direction: column; gap: 4px; }
+  .wedge-btn { width: 34px; height: 34px; border-radius: 50%; border: 3px solid #2c4a46; background: radial-gradient(circle at 40% 35%, #23403c, #0f2a27); transition: background 120ms; }
+  .wedge-btn:hover { border-color: var(--c); }
+  .wedge-btn[aria-pressed=true] { border-color: var(--cream); background: radial-gradient(circle at 38% 30%, color-mix(in srgb, var(--c) 70%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 70%, #000)); box-shadow: 0 0 12px color-mix(in srgb, var(--c) 70%, transparent); }
+  .tot { white-space: nowrap; }
+  .tot .flap { font-size: 18px; }
+  .cake-cell svg { width: 42px; height: 42px; }
+  .warn { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: rgba(244, 185, 66, .12); border: 3px solid var(--gold); color: var(--warm); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-weight: 600; }
+
+  /* Publikum */
+  .groups { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .groups div { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 8px; background: var(--ink); color: var(--cream); font-weight: 600; }
+  .groups .flap { font-size: 20px; }
+  .top { list-style: none; padding: 0; margin: 0; }
+  .top li { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .top li > span:nth-child(2) { font-family: var(--digits); font-weight: 900; color: var(--gold); }
+  .top .small { font-size: 13px; min-height: 32px; padding: 3px 10px; }
+
+  .login { max-width: 420px; margin: 10vh auto; padding: 0 16px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
+  .login .box { width: 100%; text-align: left; }
+  .login input { width: 100%; padding: 14px; border-radius: 10px; border: 3px solid var(--ink); background: var(--warm); color: var(--ink); font-size: 22px; font-weight: 800; margin: 10px 0 14px; box-shadow: 0 0 0 3px var(--cream); }
+  .login input:focus { outline: none; box-shadow: 0 0 0 4px var(--gold); }
+  .err { color: var(--coral); font-weight: 800; min-height: 1.4em; }
+
+  /* Showkjøring */
+  .now { border-color: var(--gold); }
+  .now-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .stepno { font-family: var(--sign); font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--gold); }
+  .now-title { margin: 8px 0 12px; font-family: var(--sign); font-size: 30px; line-height: 1.1; text-transform: uppercase; color: var(--warm); }
+  .cue { padding: 14px 16px; border-radius: 10px; background: var(--ink); border-left: 6px solid var(--cat, var(--gold)); font-size: 19px; line-height: 1.5; color: var(--cream); }
+  .cue .who { display: block; font-family: var(--sign); font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--gold); margin-bottom: 4px; }
+  .now .facit { margin-top: 12px; display: inline-block; padding: 8px 12px; border-radius: 8px; background: var(--ink); border: 2px dashed var(--green); color: var(--muted); }
+  .now .facit strong { color: var(--green); }
+  .btn.next { width: 100%; min-height: 104px; margin-top: 18px; flex-direction: column; gap: 4px; border-width: 4px; box-shadow: inset 0 3px 0 rgba(255,255,255,.6), 0 7px 0 #6e4c0b; }
+  .btn.next:active:not(:disabled) { transform: translateY(5px); box-shadow: inset 0 3px 0 rgba(255,255,255,.6), 0 2px 0 #6e4c0b; }
+  .next-label { font-family: var(--sign); font-size: 40px; text-transform: uppercase; line-height: 1; }
+  .next-label::after { content: ' ▶'; }
+  .next-what { font-size: 16px; font-weight: 800; opacity: .8; }
+  .small-row { margin-top: 18px; }
+  .small-row .hint { font-size: 13px; }
+  .score-box { border-color: var(--cat); }
+  .score-box .teams { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 560px) { .score-box .teams { grid-template-columns: 1fr; } }
+  .team-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 10px 16px; border-radius: 14px; border: 4px solid var(--cream); background: linear-gradient(180deg, #146d66, #0b5651); color: var(--warm); box-shadow: 0 0 0 2px var(--ink), 0 6px 0 2px var(--ink); cursor: pointer; }
+  .team-btn .cake { width: 70px; height: 70px; }
+  .team-btn .tn { font-family: var(--sign); font-size: 19px; text-transform: uppercase; text-align: center; line-height: 1.1; }
+  .team-btn .ts { font-size: 14px; font-weight: 800; color: var(--muted); }
+  .team-btn.on { background: linear-gradient(180deg, #ffe08f, var(--gold) 55%, #e0a22e); color: var(--ink); box-shadow: 0 0 0 2px var(--ink), 0 3px 0 2px #6e4c0b, 0 0 24px rgba(244, 185, 66, .5); transform: translateY(3px); }
+  .team-btn.on .ts { color: var(--ink); }
+  .team-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .upcoming { margin: 0; padding: 0; list-style: none; }
+  .upcoming li { display: flex; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--line); color: var(--cream); }
+  .upcoming li:first-child { color: var(--warm); font-weight: 800; }
+  .upcoming .n { width: 28px; text-align: right; color: var(--muted); }
+  .adv-wrap { max-width: 1500px; margin: 0 auto; padding: 0 24px 40px; }
+  @media (max-width: 960px) { .adv-wrap { padding: 0 14px 30px; } }
+  .adv > summary { cursor: pointer; padding: 14px 18px; border-radius: 10px; background: var(--ink); border: 2px solid var(--line-strong); font-family: var(--sign); font-size: 15px; text-transform: uppercase; letter-spacing: .05em; color: var(--cream); }
+  .adv[open] > summary { margin-bottom: 18px; }
+  .adv-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
+  @media (max-width: 960px) { .adv-grid { grid-template-columns: minmax(0, 1fr); } }
+  .adv .qlist { max-height: 460px; overflow: auto; }
+
+  .audio-box > summary { cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: var(--sign); font-size: 16px; text-transform: uppercase; letter-spacing: .06em; color: var(--gold); }
+  .audio-box .astatus { font-family: var(--body); font-size: 14px; text-transform: none; letter-spacing: 0; font-weight: 800; padding: 4px 10px; border-radius: 6px; background: #3a0d0a; color: #ffc9be; }
+  .audio-box.ready .astatus { background: #12351f; color: #b8f0c4; }
+  .aslot { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 8px 10px; margin-bottom: 8px; border-radius: 8px; background: var(--ink); border: 2px dashed #2e5c57; }
+  .aslot.ok { border-style: solid; border-color: var(--green); }
+  .aname b { display: block; font-size: 15px; }
+  .aname small { display: block; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .btn.small { min-height: 34px; padding: 4px 10px; font-size: 14px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+import { api, syncClock, now, secondsLeft, h, cakeSVG, catOf, teamName, groupName, poll, store, pursuitSign, flap } from '/shared.js';
+import { Director, SLOTS, cue } from '/audio.js';
+
+// ---------- Lyd ----------
+// Musikken spilles fra enheten som kjører kontrollpanelet (teknisk-PC-en koblet til lydanlegget).
+// Storskjermen viser aldri lydoppsett, så publikum ser det ikke.
+const audio = new Director();
+const local = store('local');
+let audioOn = local.get('tp-audio-on') ?? true;
+let audioOpen = null; // null = automatisk (åpent til alt er klart)
+let picking = false;  // filvelgeren er åpen: ikke tegn på nytt
+audio.loadAll().then(() => draw());
+const unlock = () => { if (!audio.enabled) audio.unlock().then(() => draw()); };
+addEventListener('pointerdown', unlock);
+addEventListener('keydown', unlock);
+addEventListener('focus', () => { picking = false; });
+
+let lastKey = null, lastPhase = null, lastAwards = '', buzzedFor = null;
+function audioSync() {
+  if (!data) return;
+  const st = data.state;
+  const key = [st.phase, st.step, st.teamsShown, st.qIndex].join('|');
+  if (key !== lastKey) {
+    // Ved første innlasting spilles ingenting (unngår musikk midt i en replikk ved omlasting).
+    if (lastKey !== null && audioOn) { st._left = (st.deadline - now()) / 1000; cue(audio, st.phase, lastPhase, st); }
+    lastKey = key; lastPhase = st.phase;
+  }
+  const q = data.questions[st.qIndex];
+  const aw = q ? JSON.stringify(st.awards?.[q.id] ?? []) : '';
+  if (q && lastAwards && aw !== lastAwards && (st.awards?.[q.id] ?? []).length > JSON.parse(lastAwards || '[]').length && audioOn) audio.ding();
+  lastAwards = aw || '[]';
+}
+
+const session = store('session');
+const app = document.getElementById('app');
+let pin = session.get('tp-pin');
+let data = null;
+let stopPoll = null;
+let lastError = '';
+
+const phaseNames = { intro: 'Intro', categories: 'Kategoriene', teams: 'Lagene', rules: 'Reglene', ask: 'Spørsmålet vises', finale: 'Finalen', outro: 'Avslutning', lobby: 'Velkomst', category: 'Kategori vises', question: 'Spørsmål pågår', reveal: 'Fasit vises', board: 'Kakestilling', leaderboard: 'Toppliste salen', winner: 'Vinner kåret' };
+
+async function act(action, extra = {}) {
+  try {
+    data = await api('admin', { method: 'POST', pin, body: { action, ...extra } });
+    syncClock(data.serverNow);
+    lastError = '';
+    audioSync();
+  } catch (e) {
+    if (e.status === 401) { pin = null; session.del('tp-pin'); lastError = e.message; stopPoll?.(); }
+    else lastError = e.message;
+  }
+  draw();
+}
+
+function loginView() {
+  const input = h('input', { type: 'password', inputmode: 'numeric', autocomplete: 'current-password', 'aria-label': 'PIN' });
+  return h('form', { class: 'login', onsubmit: (e) => { e.preventDefault(); pin = input.value; session.set('tp-pin', pin); start(); } },
+    pursuitSign({ scale: 0.36 }),
+    h('section', { class: 'box' },
+      h('h2', {}, 'Kontrollrom'),
+      h('p', { style: { margin: 0 } }, 'For teknisk ansvarlig. Skriv inn PIN-koden.'),
+      input,
+      h('div', { class: 'err', role: 'alert' }, lastError),
+      h('button', { class: 'btn primary', type: 'submit', style: { width: '100%' } }, 'Logg inn')));
+}
+
+let busy = false;
+let advOpen = false;
+
+// Hva kommer når man trykker «Neste»? (Speiler logikken på serveren.)
+function nextStepIndex() {
+  const st = data.state, plan = data.plan;
+  const cur = plan[st.step];
+  if (cur?.type === 'reveal' && data.fullCakes.length > 0) return plan.findIndex((x) => x.type === 'winner');
+  return Math.min(plan.length - 1, (st.step ?? -1) + 1);
+}
+
+async function next() {
+  if (busy) return;
+  await audio.unlock(); // NESTE er et brukertrykk: nok til at nettleseren tillater lyd
+  busy = true;
+  draw();
+  await act('next', { expectStep: data.state.step ?? -1 });
+  busy = false;
+  draw();
+}
+
+// Fyll inn fasit og kallenavn i replikken når de er kjent.
+function fillCue(text, q, st) {
+  if (!q) return text;
+  const r = st.phase === 'reveal' ? st.reveal : null;
+  const plain = q.answerLabel ?? (q.type === 'mc' ? q.options[q.answer] : `${q.answer}${q.unit && q.unit !== 'årstall' ? ' ' + q.unit : ''}`);
+  return text.replace('[fasit]', plain).replace('[kallenavn]', r?.fastest?.nick ?? r?.closest?.nick ?? '[ingen i salen]');
+}
+
+function facitOf(q) {
+  return q.type === 'mc' ? `${'ABCD'[q.answer]}: ${q.options[q.answer]}` : (q.answerLabel ?? `${q.answer}${q.unit ? ' ' + q.unit : ''}`);
+}
+
+function showBox() {
+  const st = data.state, plan = data.plan;
+  const cur = plan[st.step];
+  const ni = nextStepIndex();
+  const nxt = plan[ni];
+  const atEnd = st.step >= plan.length - 1;
+  const q = cur?.qIndex != null ? data.questions[cur.qIndex] : null;
+  const cat = q && catOf(data.game, q.cat);
+  let live = null;
+  if (st.phase === 'question') live = h('div', { class: 'live' }, h('strong', { id: 'cd' }, secondsLeft(st.deadline)), ' sekunder igjen. ', h('strong', {}, data.answers), ' svar fra salen.');
+  if (st.phase === 'reveal' && st.reveal) {
+    const r = st.reveal;
+    live = h('div', { class: 'live' },
+      `${r.total} svar fra salen. `,
+      r.fastest ? ['Raskest med riktig svar: ', h('strong', { style: { fontSize: '20px' } }, r.fastest.nick), '. '] : null,
+      r.closest ? ['Nærmest i salen: ', h('strong', { style: { fontSize: '20px' } }, r.closest.nick), ` (${r.closest.value}). `] : null);
+  }
+  return h('section', { class: 'box now', style: cat ? { '--cat': cat.color } : null },
+    h('div', { class: 'now-head' },
+      h('span', { class: 'stepno' }, st.step >= 0 ? `Steg ${st.step + 1} av ${plan.length}` : 'Klar til start'),
+      cat ? h('span', { class: 'cat-sign' }, cat.name) : null),
+    h('h1', { class: 'now-title' }, cur ? cur.title : 'Showet har ikke startet'),
+    cur ? h('div', { class: 'cue' }, h('span', { class: 'who' }, 'Agne'), fillCue(cur.cue, q, st)) : h('div', { class: 'cue' }, 'Trykk NESTE for å starte introen. Sjekk først at storskjermen er åpen, og at «Lyd og musikk» til høyre står som «Klar».'),
+    q ? h('div', { class: 'facit' }, 'Fasit (bare synlig her): ', h('strong', {}, facitOf(q))) : null,
+    live,
+    st.tie ? h('div', { class: 'warn' }, 'Uavgjort! Kjør et ekstra spørsmål, og velg vinneren under «Avansert → Kakestykker».') : null,
+    h('button', { class: 'btn primary next', disabled: busy || atEnd || (st.tie && cur?.type === 'winner'), onclick: next },
+      h('span', { class: 'next-label' }, atEnd ? 'Showet er ferdig' : 'Neste'),
+      !atEnd && nxt ? h('span', { class: 'next-what' }, nxt.title) : null),
+    h('div', { class: 'row small-row' },
+      h('button', { class: 'btn', disabled: busy || (st.step ?? -1) <= 0, onclick: () => act('prev') }, 'Tilbake ett steg'),
+      h('button', { class: 'btn', onclick: () => audio.stop(0.8) }, 'Stopp musikken'),
+      h('span', { class: 'muted hint' }, 'Tips: en presentasjonsklikker (pil høyre / Page Down) trykker også «Neste».')));
+}
+
+function scoreBox() {
+  const st = data.state;
+  const cur = data.plan[st.step];
+  if (!cur || cur.type !== 'reveal') return null;
+  const q = data.questions[cur.qIndex];
+  const cat = catOf(data.game, q.cat);
+  const awarded = st.awards?.[q.id] ?? [];
+  const finale = q.round === 'Finale';
+  return h('section', { class: 'box score-box', style: { '--cat': cat.color } },
+    h('h2', {}, finale ? `Hvem var nærmest? Stykket: ${cat.name}` : `Hvem svarte riktig? Stykket: ${cat.name}`),
+    h('p', { style: { margin: '0 0 14px' } }, finale ? 'Trykk på laget som var nærmest. Har det laget allerede stykket, går det til nest nærmeste.' : 'Trykk på alle lag som hadde riktig på tavla. Trykk igjen for å angre.'),
+    h('div', { class: 'teams' }, data.game.teams.map((t) => {
+      const on = awarded.includes(t.id);
+      const already = !on && st.cakes[t.id].includes(q.cat);
+      return h('button', { class: 'team-btn' + (on ? ' on' : ''), 'aria-pressed': String(on), disabled: already, onclick: () => act('award', { team: t.id, on: !on }) },
+        cakeSVG(data.game.categories, st.cakes[t.id], t.name),
+        h('span', { class: 'tn' }, t.name),
+        h('span', { class: 'ts' }, already ? 'Har allerede stykket' : on ? 'Fikk stykket ✓' : 'Ingen poeng'));
+    })),
+    data.fullCakes.length ? h('div', { class: 'warn' }, `${data.fullCakes.map((id) => teamName(data.game, id)).join(' og ')} har full kake! Neste steg er vinnerkåringen.`) : null);
+}
+
+function audioBox() {
+  const loaded = Object.keys(SLOTS).filter((k) => audio.has(k)).length;
+  const ready = audio.enabled && loaded === 3;
+  const status = !audio.enabled ? 'Ikke aktivert: klikk hvor som helst' : !audioOn ? 'Av' : loaded < 3 ? `${loaded} av 3 spor lastet` : 'Klar';
+  const open = audioOpen ?? !ready;
+  const slot = (k) => {
+    const def = SLOTS[k], ok = audio.has(k);
+    const input = h('input', { type: 'file', accept: 'audio/*', class: 'visually-hidden',
+      onclick: () => { picking = true; },
+      onchange: async (e) => { picking = false; const f = e.target.files[0]; if (f) { await audio.setFile(k, f); draw(); } } });
+    return h('div', { class: 'aslot' + (ok ? ' ok' : '') },
+      h('div', { class: 'aname' }, h('b', {}, (ok ? '✓ ' : '') + def.label), h('small', {}, ok ? audio.names[k] : def.hint)),
+      h('label', { class: 'btn small' }, ok ? 'Bytt' : 'Velg fil', input),
+      h('button', { class: 'btn small', disabled: !ok || !audio.enabled, onclick: () => audio.play(k, { level: 1, stopAfter: 6 }) }, 'Test'));
+  };
+  return h('details', { class: 'box audio-box' + (ready && audioOn ? ' ready' : ''), open, ontoggle: (e) => { audioOpen = e.currentTarget.open; } },
+    h('summary', {}, h('span', {}, 'Lyd og musikk'), h('span', { class: 'astatus' }, status)),
+    h('p', { class: 'muted', style: { margin: '8px 0 12px' } }, 'Lyden spilles fra denne enheten. Kjør kontrollpanelet på teknisk-PC-en som er koblet til lydanlegget. Filene lagres bare i denne nettleseren.'),
+    Object.keys(SLOTS).map(slot),
+    h('div', { class: 'row', style: { marginTop: '12px' } },
+      !audio.enabled ? h('button', { class: 'btn primary', onclick: async () => { await audio.unlock(); draw(); } }, 'Aktiver lyd') : null,
+      h('button', { class: 'btn', onclick: () => { audioOn = !audioOn; local.set('tp-audio-on', audioOn); if (!audioOn) audio.stop(0.5); draw(); } }, audioOn ? 'Slå av musikken' : 'Slå på musikken'),
+      h('button', { class: 'btn', onclick: () => audio.stop(0.8) }, 'Stopp nå')));
+}
+
+function upcomingBox() {
+  const st = data.state, plan = data.plan;
+  const items = [];
+  for (let i = nextStepIndex(); i < plan.length && items.length < 5; i++) items.push(h('li', {}, h('span', { class: 'n' }, i + 1), plan[i].title));
+  return h('section', { class: 'box' }, h('h2', {}, 'Det som kommer'), h('ol', { class: 'upcoming' }, items));
+}
+
+function planBox() {
+  const st = data.state;
+  return h('section', { class: 'box' },
+    h('h2', {}, 'Hopp til steg i manuset'),
+    h('p', { class: 'muted', style: { marginTop: 0 } }, 'Bare ved behov. Å hoppe til et spørsmål starter det på nytt.'),
+    h('ol', { class: 'qlist', 'data-scroll-key': 'plan' }, data.plan.map((p, i) => h('li', { class: i === st.step ? 'sel' : '' },
+      h('span', { class: 'n' }, i + 1),
+      h('span', { class: 'dot', style: { color: p.qIndex != null ? catOf(data.game, data.questions[p.qIndex].cat).color : 'var(--cream)' } }),
+      h('span', { class: 't', title: p.title }, p.title),
+      h('button', { class: 'btn', onclick: (e) => confirmThen(e.currentTarget, 'Bekreft', () => act('goto', { step: i })) }, i === st.step ? 'Nå' : 'Gå hit')))));
+}
+
+function cakesBox() {
+  const st = data.state;
+  const g = data.game;
+  const table = h('table', { class: 'cakes' },
+    h('thead', {}, h('tr', {}, h('th', {}, ''), g.categories.map((c) => h('th', { scope: 'col' }, h('span', { class: 'cat-mark', style: { '--cat': c.color } }, c.name))), h('th', { scope: 'col' }, 'Sum'), h('th', {}, ''))),
+    h('tbody', {}, g.teams.map((t) => h('tr', {},
+      h('th', { scope: 'row' }, t.name),
+      g.categories.map((c) => {
+        const on = st.cakes[t.id].includes(c.id);
+        return h('td', {}, h('button', { class: 'wedge-btn', style: { '--c': c.color }, 'aria-pressed': String(on), 'aria-label': `${t.name}: ${c.name}`, title: `${t.name}: ${c.name}`, onclick: () => act('wedge', { team: t.id, cat: c.id, on: !on }) }));
+      }),
+      h('td', { class: 'tot' }, flap(`${st.cakes[t.id].length}/${g.categories.length}`)),
+      h('td', { class: 'cake-cell' }, cakeSVG(g.categories, st.cakes[t.id], t.name))))));
+  const full = data.fullCakes;
+  const warn = full.length === 1
+    ? h('div', { class: 'warn' }, `${teamName(g, full[0])} har full kake. `, h('button', { class: 'btn primary', onclick: () => act('winner', { team: full[0] }) }, `Kår ${teamName(g, full[0])} som vinner`))
+    : full.length > 1
+      ? h('div', { class: 'warn' }, `${full.map((id) => teamName(g, id)).join(' og ')} har full kake samtidig. Bruk et tiebreak-spørsmål, og kår vinneren under.`, h('div', { class: 'row', style: { marginTop: '10px' } }, full.map((id) => h('button', { class: 'btn', onclick: () => act('winner', { team: id }) }, `Kår ${teamName(g, id)}`))))
+      : null;
+  return h('section', { class: 'box' },
+    h('h2', {}, 'Kakestykker'),
+    h('p', { class: 'muted', style: { marginTop: 0 } }, 'Trykk på en farge for å gi eller ta bort et stykke. Storskjermen oppdateres når kakestillingen vises.'),
+    h('div', { class: 'board-wrap' }, table), warn,
+    h('div', { class: 'row', style: { marginTop: '14px' } }, h('button', { class: 'btn' + (st.phase === 'board' ? ' go' : ''), onclick: () => act('board') }, 'Vis kakestillingen på skjermen')));
+}
+
+function audienceBox() {
+  const g = data.game;
+  const total = Object.values(data.players).reduce((a, b) => a + b, 0);
+  return h('section', { class: 'box' },
+    h('h2', {}, `Publikum (${total} med)`),
+    h('div', { class: 'groups' }, g.groups.map((gr) => h('div', {}, flap(data.players[gr.id]), gr.name))),
+    h('p', { class: 'muted', style: { margin: '6px 0 10px' } }, 'Topp 10. Sjekk kallenavnene før topplisten vises, og fjern upassende navn.'),
+    data.top.length
+      ? h('ol', { class: 'top' }, data.top.map((p) => h('li', {},
+          h('span', {}, p.nick, h('span', { class: 'muted' }, ` (${groupName(g, p.group)})`)),
+          h('span', {}, p.total.toLocaleString('nb-NO')),
+          h('button', { class: 'btn danger small', onclick: (e) => confirmThen(e.currentTarget, 'Bekreft', () => act('kick', { id: p.id })) }, 'Fjern'))))
+      : h('p', { class: 'muted' }, 'Ingen poeng ennå.'),
+    h('div', { class: 'row', style: { marginTop: '14px' } },
+      h('button', { class: 'btn' + (data.state.phase === 'leaderboard' ? ' go' : ''), onclick: () => act('leaderboard') }, 'Vis topp 5 i salen')));
+}
+
+function confirmThen(btn, label, fn) {
+  if (btn.dataset.sure) return fn();
+  btn.dataset.orig ??= btn.textContent;
+  btn.dataset.sure = '1'; btn.textContent = label;
+  setTimeout(() => { if (btn.isConnected) { delete btn.dataset.sure; btn.textContent = btn.dataset.orig ?? btn.textContent; } }, 4000);
+}
+
+function adminBox() {
+  return h('section', { class: 'box' },
+    h('h2', {}, 'Oppsett'),
+    h('div', { class: 'row' },
+      h('a', { href: '/skjerm', target: '_blank', class: 'btn' }, 'Åpne storskjermen'),
+      h('button', { class: 'btn danger', onclick: (e) => confirmThen(e.currentTarget, 'Trykk igjen: nullstill spillet', () => act('reset', { keepPlayers: true })) }, 'Nullstill spill, behold publikum'),
+      h('button', { class: 'btn danger', onclick: (e) => confirmThen(e.currentTarget, 'Trykk igjen: slett alt', () => act('reset', { keepPlayers: false })) }, 'Slett alt (etter arrangementet)')),
+    h('p', { class: 'muted', style: { marginBottom: 0 } }, 'Slett alt fjerner kallenavn, svar og poeng fra serveren.'));
+}
+
+function draw() {
+  if (!pin || !data) {
+    // Ikke tegn innloggingen på nytt mens noen skriver PIN (ellers tømmes feltet). Bare oppdater feilmeldingen.
+    const form = app.querySelector('.login');
+    if (form) { const err = form.querySelector('.err'); if (err) err.textContent = lastError; return; }
+    app.replaceChildren(loginView());
+    return;
+  }
+  const st = data.state;
+  const cur = data.plan[st.step];
+  const adv = h('details', { class: 'adv', open: advOpen, ontoggle: (e) => { advOpen = e.currentTarget.open; } },
+    h('summary', {}, 'Avansert: kakestykker, publikum, manus og nullstilling'),
+    h('div', { class: 'adv-grid' }, h('div', {}, cakesBox(), audienceBox()), h('div', {}, planBox(), adminBox())));
+  // Behold rulleposisjonen i lister med egen rulling (f.eks. manuset) når panelet tegnes på nytt.
+  const keep = {};
+  app.querySelectorAll('[data-scroll-key]').forEach((el) => { keep[el.dataset.scrollKey] = el.scrollTop; });
+  app.replaceChildren(
+    h('header', {},
+      h('div', { class: 'brand' }, pursuitSign({ scale: 0.12, bulbs: false }), h('small', {}, 'Kontrollrom')),
+      h('div', { class: 'phase-now' }, 'På storskjermen: ', h('strong', {}, cur ? cur.title : (phaseNames[st.phase] ?? st.phase))),
+      h('a', { href: '/skjerm', target: '_blank', class: 'btn' }, 'Åpne storskjermen')),
+    lastError ? h('div', { class: 'err', role: 'alert', style: { padding: '12px 24px' } }, lastError) : '',
+    h('div', { class: 'layout' },
+      h('div', {}, showBox(), scoreBox()),
+      h('div', {}, audioBox(), upcomingBox())),
+    h('div', { class: 'adv-wrap' }, adv));
+  app.querySelectorAll('[data-scroll-key]').forEach((el) => { if (keep[el.dataset.scrollKey] != null) el.scrollTop = keep[el.dataset.scrollKey]; });
+}
+
+// Presentasjonsklikker / tastatur: pil høyre eller Page Down = Neste.
+addEventListener('keydown', (e) => {
+  if (!data || e.target.closest?.('input, textarea')) return;
+  if (['ArrowRight', 'PageDown'].includes(e.key)) { e.preventDefault(); next(); }
+});
+
+// Nedtelling i panelet + summer når tiden er ute.
+setInterval(() => {
+  if (!data || data.state.phase !== 'question') return;
+  const left = secondsLeft(data.state.deadline);
+  const c = document.getElementById('cd'); if (c) c.textContent = left;
+  if (left === 0 && buzzedFor !== data.state.deadline) { buzzedFor = data.state.deadline; if (audioOn) audio.buzzer(); }
+}, 100);
+
+function start() {
+  stopPoll?.();
+  stopPoll = poll(async () => {
+    // Ikke tegn på nytt mens brukeren holder på å bekrefte noe.
+    if (document.querySelector('[data-sure]') || picking) return;
+    const scroll = scrollY;
+    await act('state');
+    scrollTo(0, scroll);
+  }, 2000);
+}
+
+if (pin) start(); else draw();
+</script>
+</body>
+</html>

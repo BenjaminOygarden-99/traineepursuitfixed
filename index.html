@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#084a46">
+<title>Trainee Pursuit – spill med</title>
+<link rel="stylesheet" href="/shared.css">
+<style>
+  body {
+    min-height: 100svh;
+    background:
+      radial-gradient(circle, rgba(255, 241, 210, .10) 0 4px, transparent 6px) 0 0 / 34px 34px,
+      radial-gradient(ellipse 120% 55% at 50% -5%, rgba(255, 220, 150, .16), transparent 65%),
+      linear-gradient(180deg, var(--stage) 0%, var(--deep) 55%, var(--ink) 100%) fixed;
+  }
+  main { max-width: 480px; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 16px 30px; min-height: 100svh; display: flex; flex-direction: column; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; min-height: 52px; }
+  .top .sign { flex: none; }
+  .top .who { font-size: 13px; padding: .35em .7em; max-width: 52%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Bli med */
+  .hero { display: flex; flex-direction: column; align-items: center; gap: 22px; margin: 26px 0 30px; text-align: center; }
+  .lead { font-size: 17px; font-weight: 600; color: var(--cream); margin: 0; max-width: 32ch; }
+  .form.panel { padding: 22px 20px 24px; margin: 0 6px; }
+  label.field, legend { display: block; margin-bottom: 8px; font-family: var(--sign); font-size: 15px; text-transform: uppercase; letter-spacing: .05em; color: var(--cream); }
+  input[type=text], input[inputmode] {
+    width: 100%; padding: 15px 16px; border-radius: 10px;
+    border: 3px solid var(--ink); background: var(--warm); color: var(--ink);
+    font-size: 21px; font-weight: 800;
+    box-shadow: inset 0 3px 0 rgba(0, 0, 0, .12), 0 0 0 3px var(--cream);
+  }
+  input::placeholder { color: #8d8572; font-weight: 600; }
+  input:focus { outline: none; box-shadow: inset 0 3px 0 rgba(0, 0, 0, .12), 0 0 0 4px var(--gold); }
+  fieldset { border: 0; padding: 0; margin: 22px 0 0; }
+  .choice { display: block; position: relative; margin-bottom: 12px; }
+  .choice input { position: absolute; opacity: 0; }
+  .choice span {
+    display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 12px 16px;
+    border-radius: 12px; border: 4px solid var(--cream);
+    background: linear-gradient(180deg, #0f6a63, #0a524d 45%, #063f3b);
+    box-shadow: inset 0 2px 0 rgba(255, 249, 234, .25), 0 0 0 2px var(--ink), 0 6px 0 2px var(--ink);
+    font-family: var(--sign); font-size: 19px; text-transform: uppercase; letter-spacing: .03em; color: var(--warm);
+    transition: transform 100ms;
+  }
+  .choice span::before { content: ''; flex: none; width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--cream); background: var(--ink); }
+  .choice input:checked + span { background: linear-gradient(180deg, #ffe08f, var(--gold) 50%, #e0a22e); color: var(--ink); transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 0 0 2px var(--ink), 0 4px 0 2px #7a540c; }
+  .choice input:checked + span::before { background: radial-gradient(circle, var(--ink) 40%, var(--warm) 45%); border-color: var(--ink); }
+  .choice input:focus-visible + span { outline: 3px solid var(--gold); outline-offset: 4px; }
+  .primary {
+    margin-top: 22px; width: 100%; min-height: 64px; padding: 14px;
+    border: 4px solid var(--ink); border-radius: 14px;
+    background: linear-gradient(180deg, #ffe08f, var(--gold) 50%, #e0a22e);
+    box-shadow: inset 0 3px 0 rgba(255, 255, 255, .6), 0 7px 0 #7a540c, 0 12px 18px rgba(0, 0, 0, .35);
+    color: var(--ink); font-family: var(--sign); font-size: 26px; text-transform: uppercase; letter-spacing: .03em;
+  }
+  .primary:active { transform: translateY(4px); box-shadow: inset 0 3px 0 rgba(255,255,255,.6), 0 3px 0 #7a540c; }
+  .primary:disabled { opacity: .55; }
+  .note { font-size: 13px; color: var(--muted); margin: 26px 8px 0; }
+  .error { color: var(--coral); font-weight: 800; margin-top: 12px; min-height: 1.4em; }
+
+  /* Venting og status */
+  .center { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 14px; padding-bottom: 30px; }
+  .big { margin: 4px 0 0; font-size: clamp(30px, 9.5vw, 42px); text-wrap: balance; }
+  .center p { font-size: 17px; color: var(--cream); margin: 0; max-width: 32ch; }
+  .center .cat-sign { font-size: 18px; }
+  .status-icon {
+    width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 38% 30%, #ffe9a8, var(--gold) 55%, #c98d1c);
+    border: 5px solid var(--cream); box-shadow: 0 0 0 3px var(--ink), 0 7px 0 3px var(--ink), 0 0 40px rgba(244, 185, 66, .35);
+    animation: pop 520ms var(--bounce) both;
+  }
+  .status-icon::after { content: ''; width: 34px; height: 18px; border-left: 8px solid var(--ink); border-bottom: 8px solid var(--ink); transform: translateY(-4px) rotate(-45deg); }
+  .status-icon.wait { background: radial-gradient(circle at 38% 30%, #2d5a55, var(--teal)); animation: none; }
+  .status-icon.wait::after { width: 22px; height: 22px; border: 0; border-radius: 50%; transform: none; background: radial-gradient(circle at 40% 35%, #fffdf3, #ffe0a0 45%, #e9a640); box-shadow: 0 0 16px rgba(255, 210, 120, .9); animation: glow 1.8s ease-in-out infinite; }
+  .chip { font-size: 18px; text-transform: none; letter-spacing: 0; font-family: var(--body); font-weight: 800; }
+  @keyframes pop { from { transform: scale(.4); opacity: 0; } }
+  @keyframes glow { 50% { opacity: .45; } }
+
+  /* Spørsmål */
+  .qcard.panel { padding: 16px 16px 20px; margin: 4px 6px 26px; box-shadow: 0 0 0 3px var(--ink), 0 0 0 9px var(--gold), 0 0 0 11px var(--ink), 0 14px 0 10px #6e4c0b, inset 0 0 0 2px var(--ink), inset 0 10px 22px rgba(0,0,0,.4); border-width: 4px; }
+  .qcard .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .qcard .cat-sign { font-size: 14px; }
+  .qcard h1 { font-size: clamp(19px, 5.6vw, 23px); line-height: 1.28; margin: 14px 0 0; color: var(--warm); font-weight: 800; }
+  .clock {
+    flex: none; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle, var(--ink) 58%, var(--cream) 60% 66%, var(--gold) 68%);
+    box-shadow: 0 0 0 2px var(--ink), 0 4px 0 2px #6e4c0b;
+    font-family: var(--digits); font-weight: 900; font-size: 22px; color: var(--warm);
+  }
+  .clock.low { color: var(--coral); }
+  .answers { display: grid; gap: 14px; }
+  .ans {
+    --l: var(--a);
+    display: flex; align-items: center; gap: 14px; text-align: left; width: 100%;
+    min-height: 74px; padding: 10px 14px 10px 10px;
+    border-radius: 16px; border: 4px solid var(--l);
+    background: linear-gradient(180deg, #0f6a63 0%, #0a524d 40%, #063f3b 100%);
+    box-shadow: inset 0 2px 0 rgba(255, 249, 234, .25), 0 0 0 2px var(--ink), 0 6px 0 2px color-mix(in srgb, var(--l) 45%, var(--ink));
+    color: var(--warm); font-size: 19px; font-weight: 800; line-height: 1.2;
+    -webkit-tap-highlight-color: transparent; transition: transform 90ms;
+  }
+  .ans:nth-child(2) { --l: var(--b); } .ans:nth-child(3) { --l: var(--c); } .ans:nth-child(4) { --l: var(--d); }
+  .medal {
+    flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 38% 30%, color-mix(in srgb, var(--l) 70%, #fff), var(--l) 55%, color-mix(in srgb, var(--l) 70%, #000));
+    border: 3px solid var(--cream); box-shadow: 0 0 0 2px var(--ink);
+    font-family: var(--sign); font-size: 24px; color: var(--ink); line-height: 1;
+  }
+  .ans:active { transform: translateY(3px); }
+  .ans.selected {
+    background: linear-gradient(180deg, #ffe08f, var(--gold) 50%, #e0a22e); color: var(--ink); border-color: var(--warm);
+    transform: translateY(3px); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 0 0 2px var(--ink), 0 3px 0 2px #7a540c, 0 0 30px rgba(244, 185, 66, .5);
+    opacity: 1 !important;
+  }
+  .ans.selected .medal { --l: var(--warm); }
+  .ans.selected::after { content: 'Sender …'; margin-left: auto; font-size: 13px; font-weight: 800; }
+  .ans:disabled:not(.selected) { opacity: .35; }
+
+  /* Fasit */
+  .result { font-size: clamp(46px, 15vw, 64px); transform: skewX(-6deg); }
+  .result.ok { --gold: #9fe0ad; --orange: var(--green); }
+  .result.no { color: var(--coral); }
+  .result.none { color: var(--muted); }
+  .scorecard { width: 100%; margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .scorecard > div { padding: 14px 10px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .scorecard.panel-pair > div { border-radius: 14px; background: linear-gradient(180deg, #0a524d, var(--teal)); border: 4px solid var(--cream); box-shadow: 0 0 0 2px var(--ink), 0 6px 0 2px var(--ink); }
+  .scorecard .flap { font-size: 28px; }
+  .scorecard .cap { font-family: var(--sign); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--cream); }
+  .link { align-self: center; background: none; border: 0; color: var(--muted); text-decoration: underline; margin-top: 26px; font-size: 14px; padding: 10px; }
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<script type="module">
+import { api, syncClock, now, secondsLeft, h, catOf, LETTERS, poll, store, pursuitSign, flap } from '/shared.js';
+const signScale = () => Math.max(0.28, Math.min(0.44, (Math.min(innerWidth, 480) - 48) / 880));
+
+const local = store('local');
+const app = document.getElementById('app');
+let me = local.get('tp-me');            // { id, nick, group }
+let answered = local.get('tp-answered') ?? {}; // qid -> visningstekst
+let st = null;
+let shownKey = '';
+let myResult = null; let resultFor = null;
+let busy = false;
+// Svar huskes per åpning av spørsmålet (frist), slik at en nullstilling ikke låser telefonen.
+const akey = () => `${st.question.id}@${st.deadline}`;
+
+const top = () => h('div', { class: 'top' },
+  pursuitSign({ scale: 0.15, bulbs: false }),
+  me ? h('div', { class: 'who plate' }, me.nick) : null);
+
+function joinView(game, errorText = '') {
+  const err = h('div', { class: 'error', role: 'alert' }, errorText);
+  const nick = h('input', { type: 'text', id: 'nick', maxlength: 20, autocomplete: 'nickname', required: true });
+  const btn = h('button', { class: 'primary', type: 'submit' }, 'Bli med');
+  const form = h('form', { onsubmit: async (e) => {
+      e.preventDefault();
+      const group = form.querySelector('input[name=group]:checked')?.value;
+      if (!nick.value.trim()) { err.textContent = 'Skriv inn et kallenavn.'; nick.focus(); return; }
+      if (!group) { err.textContent = 'Velg hvilken gruppe du hører til.'; return; }
+      btn.disabled = true;
+      try {
+        me = await api('join', { method: 'POST', body: { nick: nick.value, group } });
+        local.set('tp-me', me);
+        shownKey = ''; draw();
+      } catch (x) { err.textContent = x.message; btn.disabled = false; }
+    } },
+    h('div', { class: 'form panel' },
+    h('label', { class: 'field', for: 'nick' }, 'Kallenavn'),
+    nick,
+    h('fieldset', {}, h('legend', {}, 'Jeg er …'),
+      game.groups.map((g) => h('label', { class: 'choice' }, h('input', { type: 'radio', name: 'group', value: g.id }), h('span', {}, g.name)))),
+    err, btn));
+  return [h('div', { class: 'hero' },
+      pursuitSign({ scale: signScale(), chase: true }),
+      h('p', { class: 'lead' }, 'Svar på de samme spørsmålene som lagene på scenen. Raske, riktige svar gir mest poeng.')),
+    form];
+}
+
+function waitView(title, text, cat, opts = {}) {
+  return [top(), h('div', { class: 'center', style: cat ? { '--cat': cat.color } : null },
+    opts.icon ? h('div', { class: 'status-icon' + (opts.icon === 'wait' ? ' wait' : '') }) : null,
+    cat ? h('span', { class: 'cat-sign' }, cat.name) : null,
+    h('p', { class: 'big lettering flat' }, title),
+    h('p', {}, text),
+    opts.chip ? h('span', { class: 'chip plate' }, opts.chip) : null)];
+}
+
+async function send(payload, label) {
+  if (busy) return;
+  busy = true;
+  app.querySelectorAll('button, input').forEach((b) => (b.disabled = true));
+  try {
+    await api('answer', { method: 'POST', body: { id: me.id, group: me.group, qid: st.question.id, ...payload } });
+    answered[akey()] = label;
+  } catch (x) {
+    if (x.status === 403) { me = null; local.del('tp-me'); }
+    else if (/allerede/.test(x.message)) answered[akey()] = answered[akey()] ?? 'Registrert';
+    else alertLine(x.message);
+  } finally {
+    busy = false;
+    local.set('tp-answered', answered);
+    shownKey = ''; draw();
+  }
+}
+function alertLine(msg) { const e = app.querySelector('.error'); if (e) e.textContent = msg; }
+
+function questionView() {
+  const q = st.question;
+  const cat = catOf(st.game, q.cat);
+  const clock = h('span', { class: 'clock', id: 'clock', role: 'timer' }, secondsLeft(st.deadline));
+  const head = h('div', { class: 'qcard panel', style: { '--cat': cat.color } },
+    h('div', { class: 'row' }, h('span', { class: 'cat-sign' }, cat.name), clock),
+    h('h1', {}, q.text));
+  if (q.type === 'mc') {
+    return [top(), head, h('div', { class: 'answers' }, q.options.map((o, i) =>
+      h('button', { class: 'ans', onclick: (e) => { e.currentTarget.classList.add('selected'); send({ choice: i }, `${LETTERS[i]}: ${o}`); } }, h('span', { class: 'medal' }, LETTERS[i]), o))),
+      h('div', { class: 'error', role: 'alert' })];
+  }
+  const input = h('input', { inputmode: 'decimal', id: 'num', autocomplete: 'off', 'aria-label': `Svar${q.unit ? ' i ' + q.unit : ''}`, placeholder: q.unit ? `Svar (${q.unit})` : 'Ditt tall' });
+  return [top(), head,
+    h('form', { onsubmit: (e) => { e.preventDefault(); if (input.value.trim()) send({ value: input.value }, `${input.value}${q.unit && q.unit !== 'årstall' ? ' ' + q.unit : ''}`); } },
+      input, h('div', { class: 'error', role: 'alert' }), h('button', { class: 'primary', type: 'submit' }, 'Send svar'))];
+}
+
+async function revealView() {
+  const q = st.question;
+  const cat = catOf(st.game, q.cat);
+  if (resultFor !== q.id) {
+    try { myResult = await api(`me?id=${encodeURIComponent(me.id)}`); } catch { myResult = null; }
+    resultFor = q.id;
+  }
+  const mine = answered[akey()];
+  const last = myResult?.last;
+  const head = !mine ? h('div', { class: 'result lettering flat none' }, 'Ikke svart')
+    : last?.correct ? h('div', { class: 'result lettering ok' }, q.type === 'mc' ? 'Riktig!' : 'Godt gjettet!')
+    : h('div', { class: 'result lettering flat no' }, q.type === 'mc' ? 'Feil' : 'Et stykke unna');
+  return [top(), h('div', { class: 'center', style: { '--cat': cat.color } },
+    head,
+    h('p', {}, 'Riktig svar'),
+    h('span', { class: 'chip plate' }, st.reveal.answerLabel),
+    mine ? h('p', { style: { marginTop: '6px' } }, `Du svarte ${mine}`) : null,
+    h('div', { class: 'scorecard panel-pair' },
+      h('div', {}, flap(last ? `+${last.points}` : '0', 'gold'), h('span', { class: 'cap' }, 'Poeng nå')),
+      h('div', {}, flap(myResult?.rank ? `${myResult.rank}.` : '-'), h('span', { class: 'cap' }, myResult?.rank ? `Plass av ${myResult.of} (${myResult.total.toLocaleString('nb-NO')} p)` : 'Plass'))))];
+}
+
+async function draw() {
+  if (!st) return;
+  if (!me) {
+    if (shownKey !== 'join') { shownKey = 'join'; app.replaceChildren(...joinView(st.game)); }
+    return;
+  }
+  const q = st.question;
+  const open = st.phase === 'question' && now() < st.deadline + 1000;
+  const key = `${st.rev}|${st.phase}|${q?.id}|${open}|${answered[q ? akey() : ''] ?? ''}`;
+  if (key === shownKey) {
+    const c = document.getElementById('clock');
+    if (c) { const left = secondsLeft(st.deadline); c.textContent = left; c.classList.toggle('low', left <= 5); }
+    return;
+  }
+  shownKey = key;
+  let nodes;
+  const cat = q && catOf(st.game, q.cat);
+  switch (st.phase) {
+    case 'intro': case 'categories': case 'teams': case 'rules':
+      nodes = waitView('Showet er i gang!', 'Se opp på scenen. Spørsmålene kommer her på mobilen.', null, { icon: 'wait' }); break;
+    case 'finale':
+      nodes = waitView('Finalen!', st.game.audienceInFinale === false ? 'Nå svarer bare lagene på scenen. Heia på favoritten!' : 'Nærmest svaret vinner. Du gjetter et tall på mobilen.', null, { icon: 'wait' }); break;
+    case 'outro':
+      nodes = waitView('Takk for at du spilte!', myResult?.rank ? `Du endte som nr. ${myResult.rank} av ${myResult.of}.` : 'Vi ses på neste Høstbord.', null, { icon: 'ok' }); break;
+    case 'ask':
+      nodes = st.audienceOpen === false
+        ? waitView('Nå svarer bare lagene', q.text ?? '', cat, { icon: 'wait' })
+        : [top(), h('div', { class: 'qcard panel', style: { '--cat': cat.color } }, h('div', { class: 'row' }, h('span', { class: 'cat-sign' }, cat.name), h('span', { class: 'clock' }, st.duration)), h('h1', {}, q.text)),
+           h('div', { class: 'center', style: { flex: 'none', paddingTop: '10px' } }, h('div', { class: 'status-icon wait' }), h('p', {}, 'Lytt til Agne. Svarknappene kommer når klokka starter!'))];
+      break;
+    case 'category':
+      nodes = waitView('Gjør deg klar', `${q.round}, spørsmål ${q.n}. Spørsmålet kommer straks.`, cat, { icon: 'wait' }); break;
+    case 'question':
+      if (st.audienceOpen === false) nodes = waitView('Nå svarer bare lagene', 'Følg med på storskjermen.', cat, { icon: 'wait' });
+      else if (answered[akey()]) nodes = waitView('Svaret er registrert', 'Følg med på storskjermen.', cat, { icon: 'ok', chip: answered[akey()] });
+      else if (!open) nodes = waitView('Tiden er ute', 'Fasiten kommer på storskjermen.', cat, { icon: 'wait' });
+      else nodes = questionView();
+      break;
+    case 'reveal': nodes = await revealView(); break;
+    case 'board': nodes = waitView('Kakestillingen', 'Se på storskjermen hvem som leder.'); break;
+    case 'leaderboard': nodes = waitView('Toppliste', 'Er du blant de fem beste i salen?'); break;
+    case 'winner': nodes = waitView('Takk for at du spilte!', myResult?.rank ? `Du endte som nr. ${myResult.rank} av ${myResult.of}.` : 'Vi ses på neste Høstbord.'); break;
+    default: nodes = waitView(`Du er med, ${me.nick}!`, 'Første spørsmål kommer på storskjermen snart. Hold mobilen klar.', null, { icon: 'ok' });
+  }
+  app.replaceChildren(...nodes,
+    h('button', { class: 'link', onclick: () => { if (!confirmLeave()) return; me = null; local.del('tp-me'); shownKey = ''; draw(); } }, 'Bytt kallenavn'));
+}
+function confirmLeave() {
+  const b = app.querySelector('.link');
+  if (b.dataset.sure) return true;
+  b.dataset.sure = '1'; b.textContent = 'Trykk igjen for å starte på nytt (poengene dine forsvinner)';
+  return false;
+}
+
+setInterval(() => { if (st?.phase === 'question') draw(); }, 200);
+
+poll(async () => {
+  st = await api('state');
+  syncClock(st.serverNow);
+  await draw();
+}, 1500);
+</script>
+</body>
+</html>
