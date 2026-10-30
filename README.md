@@ -18,6 +18,7 @@ Kontrollpanelet (`/kontroll`) følger manuset steg for steg. **Det eneste du gj�
 
 1. **Før gjestene kommer:** Åpne `/skjerm` i fullskjerm på projektoren. Åpne `/kontroll` på **teknisk-PC-en som er koblet til lydanlegget**, logg inn med PIN, og last inn de tre musikkfilene under «Lyd og musikk» (se under). Lyden spilles fra kontrollpanelet, ikke fra storskjermen.
 2. **Under showet:** Trykk **NESTE**. Panelet viser hva som skjer på storskjermen og hva Agne skal si (replikkene er hentet fra manuset). En presentasjonsklikker fungerer også (pil høyre eller Page Down).
+**Hvert spørsmål tar fire trykk:** kategori (står til lagene har valgt spiller) → spørsmålet vises (Agne leser) → klokka går (20 s) → fasit.
 3. **Etter hver fasit:** Trykk på laget eller lagene som hadde riktig svar på tavla. Laget får kakestykket, storskjermen viser et banner, og det spilles en pling. I finalen trykker du på laget som var nærmest. Lag som allerede har stykket, er sperret.
 4. **Får et lag full kake,** hopper neste trykk rett til vinnerkåringen. Er spørsmålene brukt opp, vinner laget med flest stykker. Ved uavgjort ber panelet deg velge vinner under «Avansert».
 

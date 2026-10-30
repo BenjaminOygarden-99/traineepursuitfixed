@@ -1,0 +1,235 @@
+/* ==========================================================================
+   Trainee Pursuit – «Retro TV Game Show» (designsystem)
+   Tenkt som et norsk TV-gameshow fra 1988, forsiktig digitalisert i 2026.
+   Alle fonter ligger lokalt i /fonts.
+   ========================================================================== */
+
+@font-face { font-family: 'TP Sign'; src: url('/fonts/adventor-bold.woff') format('woff'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'TP Sans'; src: url('/fonts/inter-400.woff') format('woff'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'TP Sans'; src: url('/fonts/inter-600.woff') format('woff'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'TP Sans'; src: url('/fonts/inter-800.woff') format('woff'); font-weight: 800; font-display: swap; }
+@font-face { font-family: 'TP Digits'; src: url('/fonts/inter-display-900.woff') format('woff'); font-weight: 900; font-display: swap; }
+
+:root {
+  /* Scene */
+  --deep: #062e2d;
+  --stage: #084a46;
+  --teal: #033936;
+  --ink: #021c1b;
+  --line: rgba(255, 241, 210, 0.14);
+  --line-strong: rgba(255, 241, 210, 0.34);
+
+  /* Maling, plast og lys */
+  --cream: #fff1d2;
+  --warm: #fff9ea;
+  --gold: #f4b942;
+  --gold-deep: #b98317;
+  --orange: #e96f3a;
+  --coral: #f47b67;
+  --cyan: #65bfc1;
+  --pink: #d978a1;
+  --purple: #9a83bd;
+  --green: #83c994;
+  --bulb: #ffe6a8;
+  --muted: #a9c7bd;
+  --danger: #f47b67;
+
+  /* Svarbokstaver */
+  --a: var(--gold);
+  --b: var(--cyan);
+  --c: var(--coral);
+  --d: var(--green);
+
+  --sign: 'TP Sign', 'Avant Garde', 'Century Gothic', 'Arial Black', sans-serif;
+  --body: 'TP Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --digits: 'TP Digits', 'TP Sans', 'Arial Black', sans-serif;
+  --bounce: cubic-bezier(.2, 1.4, .4, 1);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+html { background: var(--ink); }
+body {
+  background: var(--deep);
+  color: var(--cream);
+  font-family: var(--body);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.muted { color: var(--muted); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Skiltbokstaver: versaler, tykk kontur, ekstrudert gull/oransje-skygge. */
+.lettering {
+  font-family: var(--sign);
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: .9;
+  letter-spacing: -0.02em;
+  color: var(--warm);
+  -webkit-text-stroke: .085em var(--ink);
+  paint-order: stroke fill;
+  text-shadow:
+    .025em .03em 0 var(--gold), .04em .05em 0 var(--gold),
+    .055em .07em 0 var(--orange), .07em .085em 0 var(--orange),
+    .085em .1em 0 var(--ink), .1em .115em 0 var(--ink);
+}
+.lettering.flat { text-shadow: .04em .05em 0 var(--ink); -webkit-text-stroke: .06em var(--ink); }
+.label-caps { font-family: var(--sign); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+
+/* ==========================================================================
+   PURSUIT-SKILTET – signaturelementet
+   Pærene tegnes av JS (bulbFrame) langs kanten.
+   ========================================================================== */
+.sign {
+  --s: 1;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  padding: calc(46px * var(--s)) calc(86px * var(--s)) calc(52px * var(--s));
+  border-radius: calc(80px * var(--s));
+  background:
+    radial-gradient(rgba(255, 241, 210, .10) 1.6px, transparent 2.2px) 0 0 / calc(18px * var(--s)) calc(18px * var(--s)),
+    radial-gradient(ellipse at 50% 30%, #0d5f59, var(--teal) 70%);
+  border: calc(30px * var(--s)) solid var(--gold);
+  box-shadow:
+    inset 0 0 0 calc(6px * var(--s)) var(--cream),
+    inset 0 0 0 calc(9px * var(--s)) var(--ink),
+    inset 0 calc(18px * var(--s)) calc(40px * var(--s)) rgba(0, 0, 0, .45),
+    0 0 0 calc(4px * var(--s)) var(--ink),
+    0 calc(16px * var(--s)) 0 calc(4px * var(--s)) #8a5f0e,
+    0 calc(30px * var(--s)) calc(50px * var(--s)) rgba(0, 0, 0, .55);
+}
+.sign::before { /* blank kant på gullbåndet */
+  content: ''; position: absolute; inset: calc(-30px * var(--s)); border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 249, 234, .45), transparent 22%, transparent 70%, rgba(0, 0, 0, .25));
+  -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  padding: calc(30px * var(--s));
+}
+.sign .lettering { font-size: calc(150px * var(--s)); transform: skewX(-6deg); text-align: center; }
+.sign .lettering span { display: block; }
+
+/* Liten plate under skiltet (f.eks. «Høstbord 2026») */
+.plate {
+  display: inline-block;
+  padding: .32em .9em .36em;
+  border-radius: .4em;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--sign); font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  border: .12em solid var(--ink);
+  box-shadow: 0 .16em 0 var(--ink), inset 0 -.14em 0 rgba(0, 0, 0, .12);
+}
+
+/* ==========================================================================
+   Lyspærer (wolfram, ikke LED)
+   ========================================================================== */
+.bulbs { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.bulb-core { fill: url(#tp-bulb); }
+.bulb-halo { fill: url(#tp-halo); }
+.bulb { opacity: var(--b, 1); }
+.bulb.flicker { animation: bulb-breathe var(--fd, 5s) ease-in-out infinite alternate; }
+.bulb.off { opacity: .14; }
+.bulbs.chase .bulb { animation: bulb-on 600ms ease-out both; animation-delay: calc(var(--i) * var(--step, 22ms) + var(--chase-delay, 0ms)); }
+@keyframes bulb-breathe { from { opacity: var(--b, 1); } to { opacity: calc(var(--b, 1) * .72); } }
+@keyframes bulb-on { 0% { opacity: .1; } 40% { opacity: 1; filter: brightness(1.6); } 100% { opacity: var(--b, 1); } }
+
+/* ==========================================================================
+   Kategoriskilt
+   ========================================================================== */
+.cat-sign {
+  display: inline-flex; align-items: center; gap: .5em;
+  padding: .34em .9em .34em .38em;
+  border-radius: .5em;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cat) 82%, #fff) 0%, var(--cat) 45%, color-mix(in srgb, var(--cat) 82%, #000) 100%);
+  border: .13em solid var(--cream);
+  box-shadow: 0 0 0 .07em var(--ink), 0 .2em 0 .07em color-mix(in srgb, var(--cat) 45%, var(--ink)), 0 .45em .6em rgba(0, 0, 0, .35);
+  color: var(--warm);
+  font-family: var(--sign); font-weight: 700; text-transform: uppercase; letter-spacing: .03em; line-height: 1;
+  -webkit-text-stroke: .07em var(--ink); paint-order: stroke fill;
+  text-shadow: .05em .06em 0 var(--ink);
+  white-space: nowrap;
+}
+.cat-sign::before, .cat-mark::before {
+  content: ''; flex: none;
+  width: 1.2em; height: 1.2em; border-radius: 50%;
+  background:
+    conic-gradient(from -30deg, var(--cat) 0 60deg, transparent 60deg) content-box,
+    var(--ink);
+  border: .12em solid var(--cream);
+  padding: .1em;
+}
+.cat-mark { display: inline-flex; align-items: center; gap: .45em; }
+.cat-mark::before { width: 1.1em; height: 1.1em; border-width: .1em; }
+
+/* ==========================================================================
+   Fysisk panel med nagler
+   ========================================================================== */
+.panel {
+  position: relative;
+  background:
+    radial-gradient(circle at 16px 16px, #d9c79c 0 4px, #6b5a33 5px, transparent 6px),
+    radial-gradient(circle at calc(100% - 16px) 16px, #d9c79c 0 4px, #6b5a33 5px, transparent 6px),
+    radial-gradient(circle at 16px calc(100% - 16px), #d9c79c 0 4px, #6b5a33 5px, transparent 6px),
+    radial-gradient(circle at calc(100% - 16px) calc(100% - 16px), #d9c79c 0 4px, #6b5a33 5px, transparent 6px),
+    linear-gradient(180deg, #0a524d, var(--teal) 60%, #022f2c);
+  border: 7px solid var(--cream);
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 4px var(--ink),
+    0 0 0 13px var(--gold),
+    0 0 0 16px var(--ink),
+    0 22px 0 14px #6e4c0b,
+    0 34px 50px 10px rgba(0, 0, 0, .5),
+    inset 0 0 0 3px var(--ink),
+    inset 0 14px 30px rgba(0, 0, 0, .45);
+}
+
+/* ==========================================================================
+   Mekaniske tavlesifre (split-flap)
+   ========================================================================== */
+.flap { display: inline-flex; gap: .06em; vertical-align: middle; }
+.flap .ch {
+  position: relative;
+  display: inline-grid; place-items: center;
+  min-width: .74em; height: 1.16em; padding: 0 .06em;
+  border-radius: .1em;
+  background: linear-gradient(180deg, #17302e 0%, #0c2422 49%, #020f0e 51%, #0a1e1c 100%);
+  box-shadow: inset 0 .03em 0 rgba(255, 255, 255, .12), 0 .05em 0 #000, 0 0 0 .025em #000;
+  color: var(--warm);
+  font-family: var(--digits); font-weight: 900; line-height: 1;
+}
+.flap .ch::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: .03em; background: rgba(0, 0, 0, .85); }
+.flap .ch.sym { min-width: .5em; background: none; box-shadow: none; color: var(--gold); }
+.flap .ch.sym::after { display: none; }
+.flap.gold .ch:not(.sym) { color: var(--gold); }
+
+/* ==========================================================================
+   Kake – en Trivial Pursuit-aktig spillbrikke i plast
+   ========================================================================== */
+.cake { display: block; overflow: visible; }
+.cake .rim { fill: var(--cream); stroke: var(--ink); }
+.cake .rim-inner { fill: #10302d; }
+.cake .slot { fill: #0e3b37; }
+.cake .wedge { transform-origin: 50px 50px; }
+.cake .wedge.fresh { animation: wedge-win 1100ms var(--bounce) both; }
+.cake .shine { fill: url(#tp-shine); pointer-events: none; }
+.cake .hub { fill: var(--cream); stroke: var(--ink); }
+.cake .hub-text { fill: var(--ink); font-family: var(--digits); font-weight: 900; text-anchor: middle; dominant-baseline: central; }
+@keyframes wedge-win { 0% { transform: scale(.3); opacity: 0; } 55% { transform: scale(1.14); opacity: 1; } 100% { transform: scale(1); } }
+
+/* ==========================================================================
+   QR
+   ========================================================================== */
+.qr svg { display: block; width: 100%; height: 100%; }
+.qr-fallback { font-weight: 800; word-break: break-all; color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: 1ms !important; }
+  .bulb.flicker { animation: none !important; }
+}

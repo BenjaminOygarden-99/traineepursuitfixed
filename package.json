@@ -1,6 +1,6 @@
 {
   "name": "trainee-pursuit",
-  "version": "0.4.1",
+  "version": "0.5.3",
   "private": true,
   "type": "module",
   "description": "Prototype: storskjerm, kontrollpanel og publikumsapp for Trainee Pursuit (Høstbord 2026)",
